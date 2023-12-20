@@ -1,5 +1,6 @@
 import scrapy
 from CareerLink.items import CareerLinkItem
+from datetime import date, timedelta
 
 class CareerlinkSpider(scrapy.Spider):
     name = "careerlink"
@@ -29,6 +30,8 @@ class CareerlinkSpider(scrapy.Spider):
         for Nganh_TG in Nganhs_TG:
             if Nganh_TG != '\n':
                 Nganh += Nganh_TG
+        if 'CNTT' in Nganh:
+            Nganh = 'IT'
         Link = response.url
         TenCV = response.css('h1[class="job-title mb-0"]::text').get()
         CongTy = response.css('p[class="org-name mb-2"] span::text').get()
@@ -39,13 +42,14 @@ class CareerlinkSpider(scrapy.Spider):
                 TinhThanh += TinhThanh_TG
         Luong = response.css('div[class="d-flex align-items-center mb-2"]')[0].css('span::text').get()
         KinhNghiem = response.css('div[class="d-flex align-items-center mb-2"]')[1].css('span::text').get()
-        HanNopCV = response.css('div[class="d-flex align-items-center mb-2"]')[2].css('b::text').get()
+        deadline = response.css('div[class="d-flex align-items-center mb-2"]')[2].css('b::text').get().split("\n")[1]
+        HanNopCV = date.today() + timedelta(days = int(deadline))
         for i in range(len(response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]'))):
             if response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]')[i].css('div[class="my-0 summary-label"]::text').get() == "Cấp bậc":
                 CapBac = response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]')[i].css('div')[2].css('::text').get()
             if response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]')[i].css('div[class="my-0 summary-label"]::text').get() == "Loại công việc":
                 LoaiHinh = response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]')[i].css('div')[2].css('::text').get()
-        SoLuong = "Không có"
+        SoLuong = 1
         MoTa = ''
         MoTas_TG = response.css('div[id="section-job-description"] *:not(:empty)::text').getall()
         for MoTa_TG in MoTas_TG:

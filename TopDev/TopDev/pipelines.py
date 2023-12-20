@@ -20,11 +20,11 @@ class SaveToMySQL_test_Pipeline:
 
     def __init__(self):
         self.conn = mysql.connector.connect(
-            host='103.200.22.212',
+            host='103.56.158.31',
             port='3306',
-            user='dulieutu',
-            password=':EHr0H1o5.Pro2',
-            database='dulieutu_TTTuyenDung'
+            user='tuyendungUser',
+            password='sinhvienBK',
+            database='ThongTinTuyenDung'
         )
 
         self.cur = self.conn.cursor()

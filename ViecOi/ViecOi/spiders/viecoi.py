@@ -4,11 +4,12 @@ from ViecOi.items import ViecOi
 class ViecoiSpider(scrapy.Spider):
     name = "viecoi"
     allowed_domains = ["viecoi.vn"]
-
+    start_urls = ['https://viecoi.vn/tim-viec/linh-vuc-it-phan-cung-mang-may-tinh-212.html?page=', 'https://viecoi.vn/tim-viec/linh-vuc-it-phan-mem-lap-trinh-211.html?page=']
     def start_requests(self):
-        for page_number in range(1, 2000):
-            page_url = f"https://viecoi.vn/tim-viec/all.html?page={page_number}"
-            yield scrapy.Request(page_url, callback = self.parse)
+        for page_first_url in self.start_urls:
+            for page_number in range(1, 100):
+                page_url = page_first_url + str(page_number)
+                yield scrapy.Request(page_url, callback = self.parse)
     
     def parse(self, response):
         job_list_url = response.css('div[class = "grid-job-title"] .title-jobs-home a::attr(href)').extract()

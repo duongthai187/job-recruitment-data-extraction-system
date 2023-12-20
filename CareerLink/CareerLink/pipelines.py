@@ -27,11 +27,11 @@ class ImportToMySQL:
     
     def __init__(self):
         self.conn = mysql.connector.connect(
-            host = '103.200.22.212',
+            host = '103.56.158.31',
             port = '3306',
-            user = 'dulieutu',
-            password = ':EHr0H1o5.Pro2',
-            database = 'dulieutu_TTTuyenDung'
+            user = 'tuyendungUser',
+            password = 'sinhvienBK',
+            database = 'ThongTinTuyenDung'
         )
         # self.conn = mysql.connector.connect(
         #     host = '127.0.0.1',
@@ -45,7 +45,7 @@ class ImportToMySQL:
 
     def process_item(self, item, spider):
         sql = """
-            REPLACE INTO Stg_ThongTin(Web, Nganh, Link, TenCV, CongTy, TinhThanh, Luong, LoaiHinh, KinhNghiem, CapBac, HanNopCV, YeuCau, MoTa, PhucLoi, SoLuong) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT IGNORE INTO Stg_ThongTin(Web, Nganh, Link, TenCV, CongTy, TinhThanh, Luong, LoaiHinh, KinhNghiem, CapBac, HanNopCV, YeuCau, MoTa, PhucLoi, SoLuong) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
         self.cur.execute(sql, (item['Web'], item['Nganh'], item['Link'], item['TenCV'], item['CongTy'], item['TinhThanh'], item['Luong'], item['LoaiHinh'], item['KinhNghiem'], item['CapBac'], item['HanNopCV'], item['YeuCau'], item['MoTa'], item['PhucLoi'], item['SoLuong']))

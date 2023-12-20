@@ -119,8 +119,9 @@ class ScrapeSpider(scrapy.Spider):
                 break
         for k in range(len(script_after_2)):
             if "value" in script_after_2[k]:
-                Luong = script_after_2[k].split(":")[1]                                     #Lương 
-                item['Luong'] = Luong
+                if item['Luong'] == "Pending":
+                    Luong = script_after_2[k].split(":")[1].replace("\"", "")                                   #Lương 
+                    item['Luong'] = Luong
         #************************************************************
         for i in range(len(script)):
             if "monthsOfExperience" in script[i]:

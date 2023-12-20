@@ -64,7 +64,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "TopDev.pipelines.SaveToMySQL_test_Pipeline": 300,
+   # "TopDev.pipelines.SaveToMySQL_test_Pipeline": 300,
    "TopDev.pipelines.CleanItem": 200
 }
 

@@ -80,60 +80,96 @@ class CareerSpider(scrapy.Spider):
         #************************************************************************************************
         try:
             col_1 = response.css('div[class="detail-box has-background"]')[0]       #Loại 1
-            Nganh = col_1.css('ul li')[1].css('p a::text').getall()
+            for i in range(len(col_1.css('ul li'))):
+                try:
+                    if 'Ngành nghề' in col_1.css('ul li')[i].css('strong::text').extract():
+                        Nganh = col_1.css('ul li')[i].css('p a::text').getall()
+                    if 'Hình thức' in col_1.css('ul li')[i].css('strong::text').extract():
+                        LoaiHinh = col_1.css('ul li')[i].css('p::text').get()
+                except:
+                    continue
             TenCV = response.css('div.job-desc h1[class="title"]::text').get()
             CongTy = response.css('div.job-desc a[class = "employer job-company-name"]::text').get()
             TinhThanh = response.css('div.map p a::text').get()
-            LoaiHinh = col_1.css('ul li')[2].css('p::text').get()
             col_2 = response.css('div.detail-box.has-background')[1]
-            if len(col_2.css('ul li')) == 3:
-                Luong = col_2.css('ul li')[0].css('p::text').get()
-                CapBac = col_2.css('ul li')[1].css('p::text').get()
-                KinhNghiem = "Không có"
-                HanNopCV = col_2.css('ul li')[2].css('p::text').get()
-            else:
-                Luong = col_2.css('ul li')[0].css('p::text').get()
-                CapBac = col_2.css('ul li')[2].css('p::text').get()
-                KinhNghiem = col_2.css('ul li')[1].css('p::text').get()
-                HanNopCV = col_2.css('ul li')[3].css('p::text').get()
+            for i in range(len(col_2.css('ul li'))):
+                try:
+                    if 'Lương' in col_2.css('ul li')[i].css('strong::text').extract():
+                        Luong = col_2.css('ul li')[i].css('p::text').get()
+                    if 'Kinh nghiệm' in col_2.css('ul li')[i].css('strong::text').extract():
+                        KinhNghiem = col_2.css('ul li')[i].css('p::text').get()
+                    if 'Cấp bậc' in col_2.css('ul li')[i].css('strong::text').extract():
+                        CapBac = col_2.css('ul li')[i].css('p::text').get()
+                    if 'Hết hạn nộp' in col_2.css('ul li')[i].css('strong::text').extract():
+                        HanNopCV = col_2.css('ul li')[i].css('p::text').get()
+                except:
+                    continue
             PhucLoi = response.css('ul.welfare-list li::text').getall()
             MoTa = response.css('div.detail-row.reset-bullet p::text').getall()
-            YeuCau = response.css('div[class="detail-row"] p::text').getall()
+            YeuCau = response.css('div[class="detail-row"]')[1].css('::text').getall()
         except IndexError:
             try:
-                col_1 = response.css('div.col-lg-6')[0]                             #Loại 2
-                Nganh = col_1.css('table tr')[0].css('td a::text').getall()
-                TenCV = response.css('div[class="title"] h2::text').get()
-                CongTy = response.css('div[class="caption"] a::text').get()
-                TinhThanh = response.css('p[class="list-workplace"] a::text').get()
-                Luong = col_1.css('table tr')[1].css('td')[1].css('p strong::text').get()
-                LoaiHinh = col_1.css('table tr')[2].css('td')[1].css('p::text').get()
+                col_1 = response.css('div.col-lg-6')[0]
+                for i in range(len(col_1.css('table tr'))):                     #Loại 2
+                    try:
+                        if 'Ngành nghề' in col_1.css('table tr')[i].css('td')[0].css('p::text').extract():
+                            Nganh = col_1.css('table tr')[i].css('td')[1].css('a::text').extract()
+                        if 'Lương' in col_1.css('table tr')[i].css('td')[0].css('p::text').extract():
+                            Luong = col_1.css('table tr')[i].css('td')[1].css('p strong::text').get()
+                        if 'Hình thức' in col_1.css('table tr')[i].css('td')[0].css('p::text').extract():
+                            LoaiHinh = col_1.css('table tr')[i].css('td')[1].css('p::text').get()
+                    except:
+                        continue
                 col_2 = response.css('div.col-lg-6')[1]
-                KinhNghiem = col_2.css('tbody tr')[2].css('td')[1].css('p::text').get()
-                CapBac = col_2.css('tbody tr')[1].css('td')[1].css('p::text').get()
-                HanNopCV = col_2.css('tbody tr')[3].css('td')[1].css('p::text').get()
+                for i in range(len(col_2.css('table tr'))):
+                    try:
+                        if 'Cấp bậc' in col_2.css('tbody tr')[i].css('td')[0].css('p::text').extract():
+                            CapBac = col_2.css('tbody tr')[i].css('td')[1].css('p::text').get()
+                        if 'Hết hạn nộp' in col_2.css('tbody tr')[i].css('td')[0].css('p::text').extract():
+                            HanNopCV = col_2.css('tbody tr')[i].css('td')[1].css('p::text').get()
+                        if 'Kinh nghiệm' in col_2.css('tbody tr')[i].css('td')[0].css('p::text').extract():
+                            KinhNghiem = col_2.css('tbody tr')[i].css('td')[1].css('p::text').get()
+                    except:
+                        continue
                 PhucLoi = response.css('ul[class="welfare-list"] li::text').extract()
                 MoTa = response.css('div[class="detail-row"]')[0].css('p::text').extract()
-                YeuCau = response.css('div[class="detail-row"]')[1].css('p::text').extract()
+                YeuCau = response.css('div[class="detail-row"]')[1].css('::text').getall()
+                
+                CongTy = response.css('div[class="caption"] a::text').get()
+                TenCV = response.css('div[class="title"] h2::text').get()
+                TinhThanh = response.css('p[class="list-workplace"] a::text').get()
             except IndexError:
                 col_1 = response.css('div[class="table"] table tbody tr')                   #Loại 3
-                Nganh = col_1[0].css('td')[1].css('a::text').getall()
+                for i in range(len(col_1)):
+                    try:
+                        if 'Ngành nghề' in col_1[i].css('td')[0].css('p::text').extract():
+                            Nganh = col_1[i].css('td')[1].css('a::text').getall()
+                        if 'Lương' in col_1[i].css('td')[0].css('p::text').extract():
+                            Luong = col_1[i].css('td')[1].css('p strong::text').get()
+                        if 'Hình thức' in col_1[i].css('td')[0].css('p::text').extract():
+                            LoaiHinh = col_1[i].css('td')[1].css('p::text').get()
+                        if 'Kinh nghiệm' in col_1[i].css('td')[0].css('p::text').extract():
+                            KinhNghiem = col_1[i].css('td')[1].css('p::text').get()
+                        if 'Cấp bậc' in col_1[i].css('td')[0].css('p::text').extract():
+                            CapBac = col_1[i].css('td')[1].css('p::text').get()
+                        if 'Hết hạn nộp' in col_1[i].css('td')[0].css('p::text').extract():
+                            HanNopCV = col_1[i].css('td')[1].css('p::text').get()
+                    except:
+                        continue
                 TenCV = response.css('div[class="caption"] div.title h2::text').get()
                 CongTy = response.css('div[class="caption"] a::text').get()
                 TinhThanh = response.css('p[class="list-workplace"] a::text').get()
-                Luong = col_1[1].css('td')[1].css('p strong::text').get()
-                LoaiHinh = col_1[2].css('td')[1].css('p::text').get()
-                KinhNghiem = col_1[5].css('td')[1].css('p::text').get()
-                CapBac = col_1[4].css('td')[1].css('p::text').get()
-                HanNopCV = col_1[6].css('td')[1].css('p::text').get()
                 PhucLoi = response.css('div[class="detail-row box-welfares"] ul li::text').extract()
                 MoTa = response.css('div[class="detail-row"]')[0].css('p::text').extract()
-                YeuCau = response.css('div[class="detail-row"]')[1].css('p::text').extract()
+                YeuCau = response.css('div[class="detail-row"]')[1].css('::text').getall()
         #************************************************************************************************
-        KinhNghiem = (' '.join(KinhNghiem.split())).replace("\\r\\n", "")
+        try:
+            KinhNghiem = KinhNghiem.replace("\\r\\n", "").strip()
+        except:
+            KinhNghiem = "Không có"
         PhucLoi_s = ''
         for PL in PhucLoi:
-            PhucLoi_s += PL
+            PhucLoi_s += PL +", "
         YeuCau_s = ''
         for YC in YeuCau:
             YeuCau_s += YC
@@ -143,24 +179,90 @@ class CareerSpider(scrapy.Spider):
         Nganh_s =''
         for N in Nganh:
             Nganh_s += N.replace("\\r\\n", "").strip() + ", "
+        if "CNTT" in Nganh_s:
+            Nganh_s = "IT"
         SoLuong = "1"
         item = CBItem()
-        item['ID'] = ID
-        item['Web'] = Web
-        item['Link'] = Link
-        item['Nganh'] = Nganh_s
-        item['TenCV'] = TenCV
-        item['CongTy'] = CongTy
-        item['TinhThanh'] = TinhThanh
-        item['Luong'] = Luong
-        item['LoaiHinh'] = LoaiHinh
-        item['KinhNghiem'] = KinhNghiem
-        item['CapBac'] = CapBac
-        item['HanNopCV'] = HanNopCV
-        item['PhucLoi'] = PhucLoi_s
-        item['MoTa'] = MoTa_s
-        item['YeuCau'] = YeuCau_s
-        item["SoLuong"] = SoLuong
+
+        try:
+            item['ID'] = ID
+        except Exception as e:
+            item['ID'] = ""
+
+        try:
+            item['Web'] = Web
+        except Exception as e:
+            item['Web'] = ""
+
+        try:
+            item['Link'] = Link
+        except Exception as e:
+            item['Link'] = ""
+
+        try:
+            item['Nganh'] = Nganh_s
+        except Exception as e:
+            item['Nganh'] = ""
+
+        try:
+            item['TenCV'] = TenCV
+        except Exception as e:
+            item['TenCV'] = ""
+
+        try:
+            item['CongTy'] = CongTy
+        except Exception as e:
+            item['CongTy'] = ""
+
+        try:
+            item['TinhThanh'] = TinhThanh
+        except Exception as e:
+            item['TinhThanh'] = ""
+
+        try:
+            item['Luong'] = Luong
+        except Exception as e:
+            item['Luong'] = ""
+
+        try:
+            item['LoaiHinh'] = LoaiHinh
+        except Exception as e:
+            item['LoaiHinh'] = ""
+
+        try:
+            item['KinhNghiem'] = KinhNghiem
+        except Exception as e:
+            item['KinhNghiem'] = ""
+
+        try:
+            item['CapBac'] = CapBac
+        except Exception as e:
+            item['CapBac'] = ""
+
+        try:
+            item['HanNopCV'] = HanNopCV
+        except Exception as e:
+            item['HanNopCV'] = ""
+
+        try:
+            item['PhucLoi'] = PhucLoi_s
+        except Exception as e:
+            item['PhucLoi'] = ""
+
+        try:
+            item['MoTa'] = MoTa_s
+        except Exception as e:
+            item['MoTa'] = ""
+
+        try:
+            item['YeuCau'] = YeuCau_s
+        except Exception as e:
+            item['YeuCau'] = ""
+
+        try:
+            item["SoLuong"] = SoLuong
+        except Exception as e:
+            item["SoLuong"] = ""
         yield item
                     
                     

@@ -53,6 +53,8 @@ ROBOTSTXT_OBEY = False
 DOWNLOADER_MIDDLEWARES = {
    "ViecOi.middlewares.ScrapeOpsFakeUserAgentMiddleware": 400,
    "ViecOi.middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware": 300
+   # 'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 210,
+   # 'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 220
 }
 
 # Enable or disable extensions
@@ -102,6 +104,7 @@ SCRAPEOPS_NUM_RESULTS = 150
 SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT = 'https://headers.scrapeops.io/v1/browser-headers'
 SCRAPEOPS_FAKE_BROWSER_HEADER_ENABLED = True
 
+PROXY_POOL_ENABLED = True
 # DOWNLOAD_DELAY = 1.5
 # AUTOTHROTTLE_ENABLED = True
 # AUTOTHROTTLE_START_DELAY = 6

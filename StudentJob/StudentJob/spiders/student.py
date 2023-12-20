@@ -4,12 +4,16 @@ from scrapy.http import Request
 import re
 from StudentJob.items import IT_Item
 from datetime import date
-
+from StudentJob.pipelines import DatabaseConnector
 class StudentSpider(scrapy.Spider):
     name = "student"
     allowed_domains = ["studentjob.vn"]
 
     def start_requests(self):
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        remove_url_list_local = db_connector.get_links_from_database()
+        self.remove_url_list = remove_url_list_local
+        print("Số lượng url trong CSDL: ", len(self.remove_url_list))
         yield scrapy.Request("https://studentjob.vn/viec-lam/it?", callback = self.parse)
         
     def parse(self, response):
@@ -28,9 +32,14 @@ class StudentSpider(scrapy.Spider):
         job_list_urls = response.css('.job-tittle.job-tittle2 a[target="_blank"]').css('::attr(href)').extract()
         for job_url in job_list_urls:
             if 'https://studentjob.vn' in job_url:
-                yield scrapy.Request(job_url, callback = self.it_parse_2)
+                next_url = job_url
             else:
                 next_url = 'https://studentjob.vn' + job_url
+            
+            if next_url in self.remove_url_list:
+                print("Trùng lặp: ", next_url)
+                continue
+            else:
                 yield scrapy.Request(next_url, callback = self.it_parse_2)
     
     def it_parse_2(self, response):
@@ -39,7 +48,7 @@ class StudentSpider(scrapy.Spider):
         Link = response.url
         TenCV = response.css('.job-title::text').get().replace("\\r\\n", "").strip()
         CongTy = response.css('.company-name::text').get().replace("\\r\\n", "").strip()
-        TinhThanh = response.css('.company-address::text').get().replace("\\r\\n", "").strip().split(",")[-1]
+        TinhThanh = response.css('.company-address::text').get().replace("\\r\\n", "").strip().split(",")[-1].split("-")[-1].strip()
         Luong = response.css('.salary p::text').get()
         for i in range(len(response.css('.summary-content'))):
             if 'Loại công việc' in response.css('.summary-content')[i].css('.content-label::text').get():

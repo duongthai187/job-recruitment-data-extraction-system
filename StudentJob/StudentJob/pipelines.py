@@ -38,3 +38,34 @@ class SaveToMySQL_test_Pipeline:
     def close_spider(self, spider):
         self.cur.close()
         self.conn.close()
+        
+class DatabaseConnector:
+    def __init__(self, host, user, port, password, database):
+        self.host = host
+        self.user = user
+        self.port = port
+        self.password = password
+        self.database = database
+
+    def connect(self):
+        return mysql.connector.connect(
+            host=self.host,
+            port = self.port,
+            user=self.user,
+            password=self.password,
+            database=self.database
+        )
+
+    def get_links_from_database(self):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        query = "SELECT Link FROM Stg_ThongTin WHERE Web =\'StudentJob\'"
+        cursor.execute(query)
+
+        links = [row[0] for row in cursor.fetchall()]
+
+        cursor.close()
+        connection.close()
+
+        return links

@@ -1,12 +1,17 @@
 import scrapy
 import math
 from ViecLam24.items import ViecLam24Item
+from ViecLam24.pipelines import DatabaseConnector
 
 class Vieclam24Spider(scrapy.Spider):
     name = "vieclam24"
-    allowed_domains = ["vieclam24h.vn", "proxy.scrapeops.io"]
+    allowed_domains = ["vieclam24h.vn"]
     
     def start_requests(self):
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        remove_url_list_local = db_connector.get_links_from_database()
+        self.remove_url_list = remove_url_list_local
+        print("Số lượng url trong CSDL: ", len(self.remove_url_list))
         url_get_job = "https://vieclam24h.vn/tim-kiem-viec-lam-nhanh?page=1"
         yield scrapy.Request(url_get_job, callback = self.parse)
         
@@ -30,7 +35,12 @@ class Vieclam24Spider(scrapy.Spider):
                 url_job = url_job
             else:
                 url_job = "https://vieclam24h.vn" + url_job
-            yield scrapy.Request(url_job, callback = self.job_parse)
+            
+            if url_job in self.remove_url_list:
+                print("Trùng lặp: ", url_job)
+                continue
+            else:
+                yield scrapy.Request(url_job, callback = self.job_parse)
     
     def job_parse(self, response):
         ID = "VL24_"+ (response.url).split("-")[-1].replace(".html", "")

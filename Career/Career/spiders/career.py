@@ -1,9 +1,9 @@
 import scrapy
 import math
 import numpy as np
-import requests
 import json
 from urllib.parse import urlencode
+from Career.pipelines import DatabaseConnector
 from Career.items import CBItem
 
 class CareerSpider(scrapy.Spider):
@@ -11,12 +11,17 @@ class CareerSpider(scrapy.Spider):
     allowed_domains = ["careerbuilder.vn"]
     
     def start_requests(self):
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        remove_url_list_local = db_connector.get_links_from_database()
+        self.remove_url_list = remove_url_list_local
+        print("Số lượng url trong CSDL: ", len(self.remove_url_list))
         yield scrapy.Request("https://careerbuilder.vn/viec-lam/tat-ca-viec-lam-vi.html", callback = self.parse)
         
     def parse(self, response):
         job_count_text = response.css('div.job-found-amout h1::text').get()
         number_cv = ''.join(filter(str.isdigit, job_count_text))
         cv_count = int(number_cv)
+        print("Số lượng công việc lấy được: ", cv_count)
         if cv_count % 50 == 0:
             max_page = int(cv_count / 50)
         else:
@@ -46,7 +51,6 @@ class CareerSpider(scrapy.Spider):
         # Mã hóa dữ liệu
         encoded_data_one = urlencode({'dataOne': data_one})
         encoded_data_two = urlencode({'dataTwo': data_two})
-
         # Kết hợp dữ liệu
         payload = f"{encoded_data_one}&{encoded_data_two}"
     
@@ -63,20 +67,33 @@ class CareerSpider(scrapy.Spider):
         }    
         
         #Gửi dữ liệu và lấy kết quả trả về dạng json
-        response_js = requests.post("https://careerbuilder.vn/search-jobs", headers=header, data = payload)
-        json_data = response_js.json()
+        yield scrapy.Request("https://careerbuilder.vn/search-jobs", method = 'POST', body=json.dumps(payload), headers = header, callback = self.json_parse, meta={'url_list_1': url_list_1})
+        
         #*****************************************************************************************************
+    def json_parse(self, response):
+        json_data = response.json()
+        url_list_1 = response.meta.get('url_list_1', [])
         url_list_2 = []
         for i in range(len(json_data["data"])):
             url_list_2.append(json_data["data"][i]["LINK_JOB"])                            #Lấy được mảng url_list_2                      
         url_list = url_list_1 + url_list_2
         for url_job in url_list:
-            yield scrapy.Request(url_job, callback = self.job_parse)
+            if url_job in self.remove_url_list:
+                print("Trùng lặp: ", url_job)
+                self.remove_url_list.remove(url_job)
+                continue
+            else:
+                yield scrapy.Request(url_job, callback = self.job_parse)
         
     def job_parse(self, response):
         ID = "CB_" + response.url.split(".")[-2]
         Web = "CareerBuilder"
         Link = response.url
+        Nganh =""
+        Luong =""
+        LoaiHinh =""
+        CapBac =""
+        HanNopCV = "" #Trường kinh nghiệm đã được xử lí phía dưới
         #************************************************************************************************
         try:
             col_1 = response.css('div[class="detail-box has-background"]')[0]       #Loại 1
@@ -264,5 +281,3 @@ class CareerSpider(scrapy.Spider):
         except Exception as e:
             item["SoLuong"] = ""
         yield item
-                    
-                    

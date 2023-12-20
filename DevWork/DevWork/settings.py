@@ -17,7 +17,7 @@ NEWSPIDER_MODULE = "DevWork.spiders"
 #USER_AGENT = "DevWork (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -51,8 +51,8 @@ ROBOTSTXT_OBEY = True
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   # "DevWork.middlewares.ScrapeOpsFakeUserAgentMiddleware": 400,
-   # "DevWork.middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware": 300
+   "DevWork.middlewares.ScrapeOpsFakeUserAgentMiddleware": 400,
+   "DevWork.middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware": 300
 }
 
 # Enable or disable extensions
@@ -64,7 +64,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   # "DevWork.pipelines.ImportToMySQL": 300,
+   "DevWork.pipelines.ImportToMySQL": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -102,12 +102,12 @@ SCRAPEOPS_NUM_RESULTS = 96
 SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT = 'https://headers.scrapeops.io/v1/browser-headers'
 SCRAPEOPS_FAKE_BROWSER_HEADER_ENABLED = True
 
-# DOWNLOAD_DELAY = 1.5
-# AUTOTHROTTLE_ENABLED = True
-# AUTOTHROTTLE_START_DELAY = 6
-# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
-# CONCURRENT_REQUESTS = 4
-# CONCURRENT_REQUESTS_PER_DOMAIN = 4
+DOWNLOAD_DELAY = 1.5
+AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_START_DELAY = 6
+AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+CONCURRENT_REQUESTS = 4
+CONCURRENT_REQUESTS_PER_DOMAIN = 4
 
 RETRY_TIMES = 5
 

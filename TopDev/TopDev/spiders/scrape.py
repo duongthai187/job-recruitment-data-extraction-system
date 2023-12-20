@@ -5,6 +5,7 @@ import json
 from scrapy.http import Request
 from TopDev.items import IT_Item
 from bs4 import BeautifulSoup
+from TopDev.pipelines import DatabaseConnector
 
 import re
 import html
@@ -27,7 +28,12 @@ def decode_special_string(input_str):
 class ScrapeSpider(scrapy.Spider):
     name = "scrape"
     allowed_domains = ["topdev.vn"]
+    
     def start_requests(self):
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        remove_url_list_local = db_connector.get_links_from_database()
+        self.remove_url_list = remove_url_list_local
+        print("Số lượng url trong CSDL: ", len(self.remove_url_list))
         for page_number in range(1, 100):
             url = f'https://api.topdev.vn/td/v2/jobs?fields[job]=id,slug,title,salary,company,extra_skills,skills_str,skills_arr,skills_ids,job_types_str,job_levels_str,job_levels_arr,job_levels_ids,addresses,status_display,detail_url,job_url,salary,published,refreshed,applied,candidate,requirements_arr,packages,benefits,content,features,is_free,is_basic,is_basic_plus,is_distinction&fields[company]=slug,tagline,addresses,skills_arr,industries_arr,industries_str,image_cover,image_galleries,benefits&page={page_number}&locale=vi_VN&ordering=jobs_new'
             yield scrapy.Request(url, method = 'GET', callback = self.parse)
@@ -93,8 +99,13 @@ class ScrapeSpider(scrapy.Spider):
                 item['PhucLoi'] = PhucLoi
                 item['HanNopCV'] = HanNopCV
                 item['SoLuong'] = SoLuong
-                
-                yield scrapy.Request(Link, callback = self.parse_2, meta = {"my_item": item})
+                if Link in self.remove_url_list:
+                    print("Trùng lặp: ", Link)
+                    continue
+                else:
+                    yield scrapy.Request(Link, callback = self.parse_2, meta = {"my_item": item})
+        else:
+            return
     
     def parse_2(self, response):
         item = response.meta['my_item']

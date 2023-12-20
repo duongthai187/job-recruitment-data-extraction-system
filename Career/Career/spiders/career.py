@@ -80,7 +80,6 @@ class CareerSpider(scrapy.Spider):
         for url_job in url_list:
             if url_job in self.remove_url_list:
                 print("Trùng lặp: ", url_job)
-                self.remove_url_list.remove(url_job)
                 continue
             else:
                 yield scrapy.Request(url_job, callback = self.job_parse)

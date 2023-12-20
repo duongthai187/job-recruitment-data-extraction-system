@@ -1,13 +1,26 @@
 import scrapy
 from CareerLink.items import CareerLinkItem
 from datetime import date, timedelta
-
+from CareerLink.pipelines import DatabaseConnector
 class CareerlinkSpider(scrapy.Spider):
     name = "careerlink"
     allowed_domains = ["www.careerlink.vn"]
     
     def start_requests(self):
-        for page_number in range(1, 101):
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        remove_url_list_local = db_connector.get_links_from_database()
+        self.remove_url_list = remove_url_list_local
+        print("Số lượng url trong CSDL: ", len(self.remove_url_list))
+        yield scrapy.Request('https://www.careerlink.vn/vieclam/list', callback = self.count_job)
+        
+    def count_job(self, response):
+        job_count = int(response.css('.jobs-count-number::text').get().replace('\n', ""))
+        if job_count % 50 ==0:
+            max_page = job_count / 50
+        else:
+            max_page = job_count // 50 +1
+        for page_number in range(1, max_page+1):
+        # for page_number in range(1, 10):
             page_url = "https://www.careerlink.vn/vieclam/list?page=" + str(page_number)
             yield scrapy.Request(url=page_url, callback=self.job_url_parse)
             
@@ -18,7 +31,12 @@ class CareerlinkSpider(scrapy.Spider):
                 job_next_url = job_url
             else:
                 job_next_url = "https://www.careerlink.vn" + job_url
-            yield scrapy.Request(url=job_next_url, callback=self.job_parse)
+            
+            if job_next_url in self.remove_url_list:
+                print("Trùng lặp: ", job_next_url)
+                continue
+            else:
+                yield scrapy.Request(url=job_next_url, callback=self.job_parse)
     
     def job_parse(self, response):
         ID = "CareerLink_" + (response.url).split("/")[-1].split("?")[0]

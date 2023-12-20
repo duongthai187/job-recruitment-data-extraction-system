@@ -2,11 +2,16 @@ import scrapy
 from DevWork.items import DevWorkItem
 import random
 from time import sleep
-
+from DevWork.pipelines import DatabaseConnector
 class DevworkSpider(scrapy.Spider):
     name = "devwork"
     allowed_domains = ["devwork.vn"]
     start_urls = ["https://devwork.vn/viec-lam?page=1"]
+    db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+    remove_url_list_local = db_connector.get_links_from_database()
+    remove_url_list = remove_url_list_local
+    print("Số lượng url trong CSDL: ", len(remove_url_list))
+    
     def parse(self, response):
         job_url_list = []
         job_list = response.css('div[class="listing"]')
@@ -17,8 +22,12 @@ class DevworkSpider(scrapy.Spider):
                 job_next_url = job_url
             else:
                 job_next_url = "https://devwork.vn" + job_url
-            yield scrapy.Request(job_next_url, callback=self.parse_job)
-            sleep(random.randint(1, 3))
+            if job_next_url in self.remove_url_list:
+                print("Trùng lặp: ", job_next_url)
+                continue
+            else:
+                yield scrapy.Request(job_next_url, callback=self.parse_job)
+        #Trang tiếp theo
         next_page_url = response.css('li[class="pagination-item"] a.page-next::attr(href)').get()
         if next_page_url is not None:
             yield response.follow(next_page_url, callback = self.parse)
@@ -28,9 +37,9 @@ class DevworkSpider(scrapy.Spider):
         Web = "DevWork"
         Link = response.url
         Nganh = 'IT'
-        TenCV = response.css('div[class="header-details"] h1[class="mb-3"]::text').get()
-        CongTy = response.css('div[class="header-details"] h5[class="mb-10 fw-400"] a::text').get()
-        TinhThanh = response.css('div[class="header-details"] p::text').get()
+        TenCV = response.css('div[class="header-details"] h1[class="mb-3"]::text').get().replace("\n", "").strip()
+        CongTy = response.css('div[class="header-details"] h5[class="mb-10 fw-400"] a::text').get().replace("\n", "").strip()
+        TinhThanh = response.css('div[class="header-details"] p::text').get().replace("\n", "").strip()
         #************************************************************************************************
         col = response.css('div[class="job-overview mt-20"] li')
         Luong = col[0].css('div span::text').get()

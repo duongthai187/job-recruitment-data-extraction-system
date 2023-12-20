@@ -12,11 +12,11 @@ class ImportToMySQL:
     
     def __init__(self):
         self.conn = mysql.connector.connect(
-            host = '103.200.22.212',
+            host = '103.56.158.31',
             port = '3306',
-            user = 'dulieutu',
-            password = ':EHr0H1o5.Pro2',
-            database = 'dulieutu_TTTuyenDung'
+            user = 'tuyendungUser',
+            password = 'sinhvienBK',
+            database = 'ThongTinTuyenDung'
         )
         # self.conn = mysql.connector.connect(
         #     host = '127.0.0.1',
@@ -30,7 +30,7 @@ class ImportToMySQL:
 
     def process_item(self, item, spider):
         sql = """
-            REPLACE INTO Stg_ThongTin(Web, Nganh, Link, TenCV, CongTy, TinhThanh, Luong, LoaiHinh, KinhNghiem, CapBac, HanNopCV, YeuCau, MoTa, PhucLoi, SoLuong) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT IGNORE INTO Stg_ThongTin(Web, Nganh, Link, TenCV, CongTy, TinhThanh, Luong, LoaiHinh, KinhNghiem, CapBac, HanNopCV, YeuCau, MoTa, PhucLoi, SoLuong) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
         self.cur.execute(sql, (item['Web'], item['Nganh'], item['Link'], item['TenCV'], item['CongTy'], item['TinhThanh'], item['Luong'], item['LoaiHinh'], item['KinhNghiem'], item['CapBac'], item['HanNopCV'], item['YeuCau'], item['MoTa'], item['PhucLoi'], item['SoLuong']))
@@ -39,3 +39,34 @@ class ImportToMySQL:
     def close_spider(self, spider):
         self.cur.close()
         self.conn.close()
+        
+class DatabaseConnector:
+    def __init__(self, host, user, port, password, database):
+        self.host = host
+        self.user = user
+        self.port = port
+        self.password = password
+        self.database = database
+
+    def connect(self):
+        return mysql.connector.connect(
+            host=self.host,
+            port = self.port,
+            user=self.user,
+            password=self.password,
+            database=self.database
+        )
+
+    def get_links_from_database(self):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        query = "SELECT Link FROM Stg_ThongTin WHERE Web =\'DevWork\'"
+        cursor.execute(query)
+
+        links = [row[0] for row in cursor.fetchall()]
+
+        cursor.close()
+        connection.close()
+
+        return links

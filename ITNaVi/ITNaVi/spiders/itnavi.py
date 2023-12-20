@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import json
 import requests
 from ITNaVi.items import ITNaVi
-
+from ITNaVi.pipelines import DatabaseConnector
 import re
 import html
 
@@ -29,6 +29,10 @@ class ItvaviSpider(scrapy.Spider):
     allowed_domains = ["itnavi.com.vn"]
     
     def start_requests(self):
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        remove_url_list_local = db_connector.get_links_from_database()
+        self.remove_url_list = remove_url_list_local
+        print("Số lượng url trong CSDL: ", len(self.remove_url_list))
         yield scrapy.Request("https://itnavi.com.vn/job?", callback = self.parse)
         
     def parse(self, response):
@@ -53,6 +57,7 @@ class ItvaviSpider(scrapy.Spider):
     def it_parse(self, response):
         data_json = response.json()
         #**************************************************************************
+        item = ITNaVi()
         ID = "IT_NV_" + str(data_json["data"]["job_id"])
         Web = "ITNaVi"
         Nganh = "IT"
@@ -64,11 +69,30 @@ class ItvaviSpider(scrapy.Spider):
         LoaiHinh = data_json["data"]["job_career_type"]
         KinhNghiem = "Không có"
         CapBac = data_json["data"]["job_career_level"]
+        item['ID'] = ID
+        item['Web'] = Web
+        item['Nganh'] = Nganh
+        item['Link'] = Link
+        item['TenCV'] = TenCV
+        item['CongTy'] = CongTy
+        item['TinhThanh'] = TinhThanh
+        item['Luong'] = Luong
+        item['LoaiHinh'] = LoaiHinh
+        item['KinhNghiem'] = KinhNghiem
+        item['CapBac'] = CapBac
+        if Link in self.remove_url_list:
+            print("Trùng lặp: ", Link)
+            return
+        else:
+            yield scrapy.Request(Link, method = 'GET', callback = self.it_parse_2, meta = {'item': item, 'data_json': data_json})
         #**************************************************************************
-        response_html = requests.get(Link)
-        HanNopCV = response_html.text.split("\"validThrough\": \"")[1].split("\"")[0]
+        
+    def it_parse_2(self, response):
+        HanNopCV = response.text.split("\"validThrough\": \"")[1].split("\"")[0]
+        item = response.meta.get('item')
+        data_json = response.meta.get('data_json')
         #**************************************************************************
-        soup = BeautifulSoup(response_html.text, "html.parser")
+        soup = BeautifulSoup(response.text, "html.parser")
         icon_i = soup.find("i", class_="fas fa-users")
         if icon_i:
             sibling_p = icon_i.find_next_sibling("p")
@@ -78,8 +102,6 @@ class ItvaviSpider(scrapy.Spider):
                 SoLuong = "Không có"
         else:
             SoLuong = "Không có"
-        # HanNopCV = "Pending"
-        # SoLuong = "Pending"
         #**************************************************************************
         root = data_json["data"]["job_content"]
         soup = BeautifulSoup(root, 'html.parser')
@@ -104,18 +126,6 @@ class ItvaviSpider(scrapy.Spider):
             YeuCau = cleaned_root_TG
             PhucLoi = ""
         #**************************************************************************
-        item = ITNaVi()
-        item['ID'] = ID
-        item['Web'] = Web
-        item['Nganh'] = Nganh
-        item['Link'] = Link
-        item['TenCV'] = TenCV
-        item['CongTy'] = CongTy
-        item['TinhThanh'] = TinhThanh
-        item['Luong'] = Luong
-        item['LoaiHinh'] = LoaiHinh
-        item['KinhNghiem'] = KinhNghiem
-        item['CapBac'] = CapBac
         item['HanNopCV'] = HanNopCV
         item['SoLuong'] = SoLuong
         item['YeuCau'] = YeuCau

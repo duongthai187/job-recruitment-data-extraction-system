@@ -1,12 +1,16 @@
 import scrapy
 import re
 from job3s.items import IT_Item
-
+from job3s.pipelines import DatabaseConnector
 class Job3swebSpider(scrapy.Spider):
     name = "job3sweb"
     allowed_domains = ["job3s.vn"]
 
     def start_requests(self):
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        remove_url_list_local = db_connector.get_links_from_database()
+        self.remove_url_list = remove_url_list_local
+        print("Số lượng url trong CSDL: ", len(self.remove_url_list))
         yield scrapy.Request("https://job3s.vn/tim-viec-lam-it-phan-mem-c13?sort=1&page=1", callback = self.parse)
         
     def parse(self, response):
@@ -23,9 +27,14 @@ class Job3swebSpider(scrapy.Spider):
         job_list_url = response.css('[class="content_news_title"] a::attr(href)').extract()
         for job_url in job_list_url:
             if "https://job3s.vn" in job_url:
-                yield scrapy.Request(job_url, callback = self.it_parse_2)
+                next = job_url
             else:
                 next = "https://job3s.vn" + job_url
+            
+            if next in self.remove_url_list:
+                print("Trùng lặp: ", next)
+                continue
+            else:
                 yield scrapy.Request(next, callback = self.it_parse_2)
     
     def it_parse_2(self, response):
@@ -38,9 +47,15 @@ class Job3swebSpider(scrapy.Spider):
         for i in range(len(response.css('[class="d_flex align_s box-item"]'))):
             text = response.css('[class="d_flex align_s box-item"]')[i].css('[class="font_s16 line_h19 font_w400 cl_55 block"]::text').get().replace("\n", "").strip()
             if "Mức" in text and "lương" in text:
-                Luong = response.css('[class="d_flex align_s box-item"]')[i].css('[class="font_s16 line_h19 font_w400 cl_primary block mt_8"]::text').get().replace("\n", "").strip()
+                try:
+                    Luong = response.css('[class="d_flex align_s box-item"]')[i].css('[class="font_s16 line_h19 font_w400 cl_primary block mt_8"]::text').get().replace("\n", "").strip()
+                except:
+                    Luong = "Thỏa thuận"
             if 'Hình' in text and 'thức làm việc' in text:
-                LoaiHinh = response.css('[class="d_flex align_s box-item"]')[i].css('[class="font_s16 line_h19 font_w400 cl_primary block mt_8"]::text').get().replace("\n", "").strip()
+                try:
+                    LoaiHinh = response.css('[class="d_flex align_s box-item"]')[i].css('[class="font_s16 line_h19 font_w400 cl_primary block mt_8"]::text').get().replace("\n", "").strip()
+                except:
+                    LoaiHinh = "Toàn thời gian"
             if 'Kinh' in text and 'nghiệm' in text:
                 try:
                     KinhNghiem = response.css('[class="d_flex align_s box-item"]')[i].css('[class="font_s16 line_h19 font_w400 cl_primary block mt_8"]::text').get().replace("\n", "").strip()
@@ -52,7 +67,10 @@ class Job3swebSpider(scrapy.Spider):
                 except:
                     CapBac = "Không có"
             if 'Số' in text and 'lượng tuyển' in text:
-                SoLuong = response.css('[class="d_flex align_s box-item"]')[i].css('[class="font_s16 line_h19 font_w400 cl_primary block mt_8"]::text').get().replace("\n", "").strip()
+                try:
+                    SoLuong = response.css('[class="d_flex align_s box-item"]')[i].css('[class="font_s16 line_h19 font_w400 cl_primary block mt_8"]::text').get().replace("\n", "").strip()
+                except:
+                    SoLuong = "1"
         YeuCau = ""
         YeuCau_List = response.css('[class="item_box item-box-content"]')[1].css('::text').getall()
         for i in range(len(YeuCau_List)):

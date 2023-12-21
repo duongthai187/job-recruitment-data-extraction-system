@@ -1,21 +1,30 @@
 import scrapy
 from joboko.items import IT_Item
-
+from joboko.pipelines import DatabaseConnector
 class JobokowebSpider(scrapy.Spider):
     name = "jobokoweb"
     allowed_domains = ["vn.joboko.com"]
 
     def start_requests(self):
-        for page_number in range(1, 60):
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        remove_url_list_local = db_connector.get_links_from_database()
+        self.remove_url_list = remove_url_list_local
+        print("Số lượng url trong CSDL: ", len(self.remove_url_list))
+        for page_number in range(1, 100):
             yield scrapy.Request(f"https://vn.joboko.com//viec-lam-nganh-it-phan-mem-cong-nghe-thong-tin-iot-dien-tu-vien-thong-xni124?p={page_number}", callback = self.parse)
     
     def parse(self, response):
         job_url_list = response.css('.item-title a::attr(href)').extract()
         for job_url in job_url_list:
             if 'https://vn.joboko.com' in job_url:
-                yield scrapy.Request(job_url, callback = self.it_parse)
+                next = job_url
             else:
                 next = 'https://vn.joboko.com' + job_url
+            
+            if next in self.remove_url_list:
+                print("Trùng lặp: ", next)
+                continue
+            else:
                 yield scrapy.Request(next, callback = self.it_parse)
                 
     def it_parse(self, response):

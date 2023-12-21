@@ -48,7 +48,7 @@ class StudentSpider(scrapy.Spider):
         Link = response.url
         TenCV = response.css('.job-title::text').get().replace("\\r\\n", "").strip()
         CongTy = response.css('.company-name::text').get().replace("\\r\\n", "").strip()
-        TinhThanh = response.css('.company-address::text').get().replace("\\r\\n", "").strip().split(",")[-1].split("-")[-1].strip()
+        TinhThanh = response.css('.company-address::text').get().replace("\\r\\n", "").strip().split(",")[-1].split("-")[-1].split("–")[-1].split("_")[-1].strip()
         Luong = response.css('.salary p::text').get()
         for i in range(len(response.css('.summary-content'))):
             if 'Loại công việc' in response.css('.summary-content')[i].css('.content-label::text').get():

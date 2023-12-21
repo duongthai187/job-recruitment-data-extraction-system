@@ -2,22 +2,32 @@ from typing import Iterable
 import scrapy
 from scrapy.http import Request
 from techwork.items import IT_Item
+from techwork.pipelines import DatabaseConnector
 
 class TechworkwebSpider(scrapy.Spider):
     name = "techworkweb"
     allowed_domains = ["techworks.vn"]
 
     def start_requests(self):
-        for page_number in range(1, 650):
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        remove_url_list_local = db_connector.get_links_from_database()
+        self.remove_url_list = remove_url_list_local
+        print("Số lượng url trong CSDL: ", len(self.remove_url_list))
+        for page_number in range(1, 700):
             yield scrapy.Request(f"https://techworks.vn/viec-lam?p={page_number}", callback = self.parse)
 
     def parse(self, response):
         job_url_list = response.css('.job-tittle.job-tittle2 a[target="_blank"]::attr(href)').extract()
         for job_url in job_url_list:
             if 'https://techworks.vn' in job_url:
-                yield scrapy.Request(job_url, callback = self.it_parse)
+                next = job_url
             else:
                 next = 'https://techworks.vn' + job_url
+            
+            if next in self.remove_url_list:
+                print("Trùng lặp: ", next)
+                continue
+            else:
                 yield scrapy.Request(next, callback = self.it_parse)
     
     def it_parse(self, response):
@@ -26,7 +36,13 @@ class TechworkwebSpider(scrapy.Spider):
         Link = response.url
         TenCV = response.css('.job-title::text').get().replace("\\r\\n", "").strip()
         CongTy = response.css('a[class="company-name"]::text').get().replace("\\r\\n", "").strip()
-        TinhThanh = response.css('[class="company-location"] a::text').get().split(",")[-1]
+        try:
+            TinhThanh = response.css('[class="company-location"] a::text').get().split(",")[-1].replace("\\r\\n", "").strip()
+        except:
+            try:
+                TinhThanh = response.css('.company-address::text').get().replace("\\r\\n", "").split(",")[-1].strip()
+            except:
+                TinhThanh = "Toàn quốc"
         Luong = response.css('[class="salary"] span::text').get()
         for i in range(len(response.css('[class="summary-content"]'))):
             if 'Loại công việc' in response.css('[class="summary-content"]')[i].css('.content-label::text').get():

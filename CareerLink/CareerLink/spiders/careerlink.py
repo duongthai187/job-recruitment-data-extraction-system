@@ -61,7 +61,10 @@ class CareerlinkSpider(scrapy.Spider):
         Luong = response.css('div[class="d-flex align-items-center mb-2"]')[0].css('span::text').get()
         KinhNghiem = response.css('div[class="d-flex align-items-center mb-2"]')[1].css('span::text').get()
         deadline = response.css('div[class="d-flex align-items-center mb-2"]')[2].css('b::text').get().split("\n")[1]
-        HanNopCV = date.today() + timedelta(days = int(deadline))
+        try:
+            HanNopCV = date.today() + timedelta(days = int(deadline))
+        except:
+            HanNopCV = date.today()
         for i in range(len(response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]'))):
             if response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]')[i].css('div[class="my-0 summary-label"]::text').get() == "Cấp bậc":
                 CapBac = response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]')[i].css('div')[2].css('::text').get()

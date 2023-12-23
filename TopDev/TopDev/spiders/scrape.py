@@ -6,6 +6,7 @@ from scrapy.http import Request
 from TopDev.items import IT_Item
 from bs4 import BeautifulSoup
 from TopDev.pipelines import DatabaseConnector
+from datetime import date
 
 import re
 import html
@@ -57,7 +58,7 @@ class ScrapeSpider(scrapy.Spider):
                 LoaiHinh = data['data'][cv_count]['job_types_str']                                   #Loại hình
                 KinhNghiem = "Pending"                                  #Kinh nghiệm chưa có
                 CapBac = data['data'][cv_count]['job_levels_str']       #Cấp bậc
-                HanNopCV = "Không có"                                   #Hạn nộp CV
+                HanNopCV = date.today()                                   #Hạn nộp CV
                 YeuCau = ""
                 for requiment in data['data'][cv_count]['requirements_arr']:            #Yêu cầu
                     if (type(requiment['value']) == list):

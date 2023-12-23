@@ -3,6 +3,7 @@ from DevWork.items import DevWorkItem
 import random
 from time import sleep
 from DevWork.pipelines import DatabaseConnector
+from datetime import date
 class DevworkSpider(scrapy.Spider):
     name = "devwork"
     allowed_domains = ["devwork.vn"]
@@ -46,7 +47,12 @@ class DevworkSpider(scrapy.Spider):
         LoaiHinh = col[5].css('div span::text').get()
         KinhNghiem = col[1].css('div span::text').get()
         CapBac = col[3].css('div span::text').get()
-        HanNopCV = col[6].css('div span::text').get()
+        try:
+            HanNopCV = col[6].css('div span::text').get()
+            if HanNopCV =="":
+                HanNopCV = date.today()
+        except:
+            HanNopCV = date.today()
         SoLuong = col[7].css('div span::text').get()
         #****************************************************************
         text = response.css('div[class="block-desc"]')

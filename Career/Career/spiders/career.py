@@ -5,7 +5,7 @@ import json
 from urllib.parse import urlencode
 from Career.pipelines import DatabaseConnector
 from Career.items import CBItem
-
+from datetime import date
 class CareerSpider(scrapy.Spider):
     name = "career"
     allowed_domains = ["careerbuilder.vn"]
@@ -92,7 +92,7 @@ class CareerSpider(scrapy.Spider):
         Luong =""
         LoaiHinh =""
         CapBac =""
-        HanNopCV = "" #Trường kinh nghiệm đã được xử lí phía dưới
+        HanNopCV = date.today() #Trường kinh nghiệm đã được xử lí phía dưới
         #************************************************************************************************
         try:
             col_1 = response.css('div[class="detail-box has-background"]')[0]       #Loại 1
@@ -193,8 +193,9 @@ class CareerSpider(scrapy.Spider):
         for MT in MoTa:
             MoTa_s += MT
         Nganh_s =''
-        for N in Nganh:
-            Nganh_s += N.replace("\\r\\n", "").strip() + ", "
+        for i in range(len(Nganh)):
+            Nganh_s += Nganh[0].replace("\\r\\n", "").strip() + ","
+            break
         if "CNTT" in Nganh_s:
             Nganh_s = "IT"
         SoLuong = "1"

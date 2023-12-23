@@ -10,7 +10,7 @@ class JobokowebSpider(scrapy.Spider):
         remove_url_list_local = db_connector.get_links_from_database()
         self.remove_url_list = remove_url_list_local
         print("Số lượng url trong CSDL: ", len(self.remove_url_list))
-        for page_number in range(1, 100):
+        for page_number in range(1, 52):
             yield scrapy.Request(f"https://vn.joboko.com//viec-lam-nganh-it-phan-mem-cong-nghe-thong-tin-iot-dien-tu-vien-thong-xni124?p={page_number}", callback = self.parse)
     
     def parse(self, response):

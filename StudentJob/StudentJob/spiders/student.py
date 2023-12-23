@@ -14,7 +14,7 @@ class StudentSpider(scrapy.Spider):
         remove_url_list_local = db_connector.get_links_from_database()
         self.remove_url_list = remove_url_list_local
         print("Số lượng url trong CSDL: ", len(self.remove_url_list))
-        yield scrapy.Request("https://studentjob.vn/viec-lam/it?", callback = self.parse)
+        yield scrapy.Request("https://studentjob.vn/viec-lam", callback = self.parse)
         
     def parse(self, response):
         job_count = response.css('.count-job span::text').get()
@@ -26,7 +26,7 @@ class StudentSpider(scrapy.Spider):
             max_page = int(so) // 18 + 1
         
         for page_number in range(1, max_page+1):
-            yield scrapy.Request(f"https://studentjob.vn/viec-lam/it?p={page_number}", callback = self.it_parse)
+            yield scrapy.Request(f"https://studentjob.vn/viec-lam?p={page_number}", callback = self.it_parse)
     
     def it_parse(self, response):
         job_list_urls = response.css('.job-tittle.job-tittle2 a[target="_blank"]').css('::attr(href)').extract()

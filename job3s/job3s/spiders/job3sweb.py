@@ -11,7 +11,7 @@ class Job3swebSpider(scrapy.Spider):
         remove_url_list_local = db_connector.get_links_from_database()
         self.remove_url_list = remove_url_list_local
         print("Số lượng url trong CSDL: ", len(self.remove_url_list))
-        yield scrapy.Request("https://job3s.vn/tim-viec-lam-it-phan-mem-c13?sort=1&page=1", callback = self.parse)
+        yield scrapy.Request("https://job3s.vn/tim-viec-lam?page=1", callback = self.parse)
         
     def parse(self, response):
         job_count = response.css('.count_title::text').get()
@@ -21,7 +21,7 @@ class Job3swebSpider(scrapy.Spider):
         else:
             max_page = int(count) // 15 + 1
         for page_number in range(1, max_page+1):
-            yield scrapy.Request(f"https://job3s.vn/tim-viec-lam-it-phan-mem-c13?sort=1&page={page_number}", callback = self.it_parse)
+            yield scrapy.Request(f"https://job3s.vn/tim-viec-lam?page={page_number}", callback = self.it_parse)
         
     def it_parse(self, response):
         job_list_url = response.css('[class="content_news_title"] a::attr(href)').extract()

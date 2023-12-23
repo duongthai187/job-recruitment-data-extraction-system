@@ -10,11 +10,25 @@ class JobokowebSpider(scrapy.Spider):
         remove_url_list_local = db_connector.get_links_from_database()
         self.remove_url_list = remove_url_list_local
         print("Số lượng url trong CSDL: ", len(self.remove_url_list))
-        for page_number in range(1, 52):
-            yield scrapy.Request(f"https://vn.joboko.com//viec-lam-nganh-it-phan-mem-cong-nghe-thong-tin-iot-dien-tu-vien-thong-xni124?p={page_number}", callback = self.parse)
+        yield scrapy.Request("https://vn.joboko.com/viec-lam-theo-nganh-nghe", callback = self.parse)
     
     def parse(self, response):
+        list_branch_url = response.css('div[class="item"] ul li a::attr(href)').extract()
+        list_branch_name = response.css('div[class="item"] ul li a span::text').extract()
+        for i in range(len(list_branch_url)):
+            if 'https://vn.joboko.com' in list_branch_url[i]:
+                branch_url = list_branch_url[i]
+            else:
+                branch_url = 'https://vn.joboko.com' + list_branch_url[i]
+            branch_name = list_branch_name[i]
+            
+            for page_number in range(1, 151):
+                branch_page = f"{branch_url}?p={page_number}"  
+                yield scrapy.Request(branch_page, callback = self.branch_parse, meta = {'branch_name': branch_name})
+                
+    def branch_parse(self, response):
         job_url_list = response.css('.item-title a::attr(href)').extract()
+        branch_name = response.meta.get("branch_name")
         for job_url in job_url_list:
             if 'https://vn.joboko.com' in job_url:
                 next = job_url
@@ -25,11 +39,11 @@ class JobokowebSpider(scrapy.Spider):
                 print("Trùng lặp: ", next)
                 continue
             else:
-                yield scrapy.Request(next, callback = self.it_parse)
+                yield scrapy.Request(next, callback = self.it_parse, meta = {'branch_name': branch_name})
                 
     def it_parse(self, response):
         Web = 'Joboko'
-        Nganh = 'IT'
+        Nganh = response.meta.get("branch_name")
         Link = response.url
         TenCV = response.css('[class="nw-company-hero__info"] h2 a::text').get()
         CongTy = response.css('[class="nw-company-hero__info"]  a.nw-company-hero__text::text').get()

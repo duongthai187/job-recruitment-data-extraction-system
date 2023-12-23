@@ -67,16 +67,18 @@ class CareerSpider(scrapy.Spider):
         }    
         
         #Gửi dữ liệu và lấy kết quả trả về dạng json
-        yield scrapy.Request("https://careerbuilder.vn/search-jobs", method = 'POST', body=json.dumps(payload), headers = header, callback = self.json_parse, meta={'url_list_1': url_list_1})
+        yield scrapy.Request("https://careerbuilder.vn/search-jobs", method = 'POST', body=json.dumps(payload), headers = header, callback = self.json_parse, meta={'url_list_1': url_list_1, 'page_number': page_number})
         
         #*****************************************************************************************************
     def json_parse(self, response):
         json_data = response.json()
+        page_number = response.meta.get('page_number')
         url_list_1 = response.meta.get('url_list_1', [])
         url_list_2 = []
         for i in range(len(json_data["data"])):
             url_list_2.append(json_data["data"][i]["LINK_JOB"])                            #Lấy được mảng url_list_2                      
         url_list = url_list_1 + url_list_2
+        print("Số url của trang: ", page_number, "là: ", len(url_list))
         for url_job in url_list:
             if url_job in self.remove_url_list:
                 print("Trùng lặp: ", url_job)
@@ -194,7 +196,7 @@ class CareerSpider(scrapy.Spider):
             MoTa_s += MT
         Nganh_s =''
         for i in range(len(Nganh)):
-            Nganh_s += Nganh[0].replace("\\r\\n", "").strip() + ","
+            Nganh_s += Nganh[0].replace("\\r\\n", "").strip()
             break
         if "CNTT" in Nganh_s:
             Nganh_s = "IT"

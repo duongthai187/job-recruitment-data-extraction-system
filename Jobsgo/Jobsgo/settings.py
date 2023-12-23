@@ -1,4 +1,4 @@
-# Scrapy settings for joboko project
+# Scrapy settings for Jobsgo project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,20 +7,20 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "joboko"
+BOT_NAME = "Jobsgo"
 
-SPIDER_MODULES = ["joboko.spiders"]
-NEWSPIDER_MODULE = "joboko.spiders"
+SPIDER_MODULES = ["Jobsgo.spiders"]
+NEWSPIDER_MODULE = "Jobsgo.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "joboko (+http://www.yourdomain.com)"
+#USER_AGENT = "Jobsgo (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 50
+CONCURRENT_REQUESTS = 40
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -45,14 +45,14 @@ CONCURRENT_REQUESTS = 50
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    "joboko.middlewares.JobokoSpiderMiddleware": 543,
+#    "Jobsgo.middlewares.JobsgoSpiderMiddleware": 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   "joboko.middlewares.ScrapeOpsFakeUserAgentMiddleware": 400,
-   "joboko.middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware": 300
+   "Jobsgo.middlewares.ScrapeOpsFakeUserAgentMiddleware": 400,
+   "Jobsgo.middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware": 300
 }
 
 # Enable or disable extensions
@@ -64,7 +64,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "joboko.pipelines.SaveToMySQL_test_Pipeline": 300,
+   "Jobsgo.pipelines.SaveToMySQL_test_Pipeline": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -92,7 +92,6 @@ ITEM_PIPELINES = {
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
-
 
 SCRAPEOPS_API_KEY = 'cca4ced0-490d-41a0-b258-46f2ad7e74b3'
 

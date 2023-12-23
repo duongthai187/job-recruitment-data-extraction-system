@@ -44,7 +44,6 @@ class StudentSpider(scrapy.Spider):
     
     def it_parse_2(self, response):
         Web = 'StudentJob'
-        Nganh = 'IT'
         Link = response.url
         TenCV = response.css('.job-title::text').get().replace("\\r\\n", "").strip()
         CongTy = response.css('.company-name::text').get().replace("\\r\\n", "").strip()
@@ -53,9 +52,14 @@ class StudentSpider(scrapy.Spider):
         for i in range(len(response.css('.summary-content'))):
             if 'Loại công việc' in response.css('.summary-content')[i].css('.content-label::text').get():
                 LoaiHinh = response.css('.summary-content')[i].css('.content::text').get()
+            if 'Ngành Nghề' in response.css('.summary-content')[i].css('.content-label::text').get():
+                Nganh = response.css('.summary-content')[i].css('.content a::text').get()
+            if 'Vị trí' in response.css('.summary-content')[i].css('.content-label::text').get():
+                try:
+                    CapBac = response.css('.summary-content')[i].css('.content::text').get()
+                except:
+                    CapBac = "Không có"
         KinhNghiem = "Không có"
-        CapBac = "Không có"
-        
         MoTa = ""
         MoTa_List = response.css('.job-description *::text').getall()
         for i in range(len(MoTa_List)):

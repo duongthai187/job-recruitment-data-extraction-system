@@ -39,11 +39,14 @@ class Job3swebSpider(scrapy.Spider):
     
     def it_parse_2(self, response):
         Web = 'Job3s'
-        Nganh = 'IT'
+        Nganh = response.css('[class="breadcrumb_new d_flex"] a')[1].css('::text').get().replace("Việc làm", "")
         Link = response.url
         TenCV = response.css('[class="cl_primary pd_b12"]::text').get().replace("\n", "").strip()
         CongTy = response.css('[class="font_s20 line_h23 font_w400 cl_55"] a::text').get()
-        TinhThanh = response.css('[class="my-3"] p::text').get().replace("\n", "").strip().split(":")[0].replace("-", "").strip()
+        try:
+            TinhThanh = response.css('[class="my-3"] p::text').get().replace("\n", "").strip().split(":")[0].replace("-", "").strip()
+        except:
+            TinhThanh = "Toàn quốc"
         for i in range(len(response.css('[class="d_flex align_s box-item"]'))):
             text = response.css('[class="d_flex align_s box-item"]')[i].css('[class="font_s16 line_h19 font_w400 cl_55 block"]::text').get().replace("\n", "").strip()
             if "Mức" in text and "lương" in text:

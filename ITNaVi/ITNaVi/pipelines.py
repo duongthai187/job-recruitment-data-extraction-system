@@ -43,7 +43,7 @@ class SaveToMySQL_test_Pipeline:
 
     def process_item(self, item, spider):
         sql = """
-            INSERT IGNORE INTO Stg_ThongTin_ETL(Web, Nganh, Link, TenCV, CongTy, TinhThanh, Luong, LoaiHinh, KinhNghiem, CapBac, HanNopCV, YeuCau, MoTa, PhucLoi, SoLuong) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT IGNORE INTO Stg_ThongTin_raw(Web, Nganh, Link, TenCV, CongTy, TinhThanh, Luong, LoaiHinh, KinhNghiem, CapBac, HanNopCV, YeuCau, MoTa, PhucLoi, SoLuong) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
         self.cur.execute(sql, (item['Web'], item['Nganh'], item['Link'], item['TenCV'], item['CongTy'], item['TinhThanh'], item['Luong'], item['LoaiHinh'], item['KinhNghiem'], item['CapBac'], item['HanNopCV'], item['YeuCau'], item['MoTa'], item['PhucLoi'], item['SoLuong']))
@@ -74,7 +74,7 @@ class DatabaseConnector:
         connection = self.connect()
         cursor = connection.cursor()
 
-        query = "SELECT Link FROM Stg_ThongTin_ETL WHERE Web =\'ITNaVi\'"
+        query = "SELECT Link FROM Stg_ThongTin_raw WHERE Web =\'ITNaVi\'"
         cursor.execute(query)
 
         links = [row[0] for row in cursor.fetchall()]

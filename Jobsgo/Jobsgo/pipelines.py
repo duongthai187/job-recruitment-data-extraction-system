@@ -54,7 +54,7 @@ class DatabaseConnector:
         connection = self.connect()
         cursor = connection.cursor()
 
-        query = "SELECT Link FROM Stg_ThongTin_raw WHERE Web =\'TechWorks\'"
+        query = "SELECT Link FROM Stg_ThongTin_raw WHERE Web =\'Jobsgo\'"
         cursor.execute(query)
 
         links = [row[0] for row in cursor.fetchall()]

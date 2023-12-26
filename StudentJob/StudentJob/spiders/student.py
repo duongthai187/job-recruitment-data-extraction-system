@@ -5,10 +5,11 @@ import re
 from StudentJob.items import IT_Item
 from datetime import date
 from StudentJob.pipelines import DatabaseConnector
+import numpy as np           #Dùng unique để loại bỏ trùng lặp trong list url
 class StudentSpider(scrapy.Spider):
     name = "student"
     allowed_domains = ["studentjob.vn"]
-    
+        
     def start_requests(self):
         # db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
         db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
@@ -28,6 +29,7 @@ class StudentSpider(scrapy.Spider):
         
         for page_number in range(1, int(max_page)+1):
             yield scrapy.Request(f"https://studentjob.vn/viec-lam?p={page_number}", callback = self.it_parse)
+                
     
     def it_parse(self, response):
         job_list_urls = response.css('.job-tittle.job-tittle2 a[target="_blank"]').css('::attr(href)').extract()

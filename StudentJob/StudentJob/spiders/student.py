@@ -8,8 +8,9 @@ from StudentJob.pipelines import DatabaseConnector
 class StudentSpider(scrapy.Spider):
     name = "student"
     allowed_domains = ["studentjob.vn"]
-
+    
     def start_requests(self):
+        # db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
         db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
         remove_url_list_local = db_connector.get_links_from_database()
         self.remove_url_list = remove_url_list_local
@@ -21,11 +22,11 @@ class StudentSpider(scrapy.Spider):
         
         so = re.search(r'\b\d+\b', job_count).group()
         if int(so) % 18 == 0:
-            max_page = int(so) % 18
+            max_page = int(so) / 18
         else:
             max_page = int(so) // 18 + 1
         
-        for page_number in range(1, max_page+1):
+        for page_number in range(1, int(max_page)+1):
             yield scrapy.Request(f"https://studentjob.vn/viec-lam?p={page_number}", callback = self.it_parse)
     
     def it_parse(self, response):

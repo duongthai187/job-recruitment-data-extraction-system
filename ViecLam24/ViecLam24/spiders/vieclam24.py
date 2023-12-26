@@ -24,7 +24,7 @@ class Vieclam24Spider(scrapy.Spider):
         else:
             num_page = math.floor(num_job/30) + 1
         print(num_page)
-        for page_number in range(1, num_page +1):
+        for page_number in range(1, int(num_page) +1):
         # for page_number in range(1, 200):
             url_page = f"https://vieclam24h.vn/tim-kiem-viec-lam-nhanh?page={page_number}"
             yield scrapy.Request(url_page, callback = self.get_job_list)

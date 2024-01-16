@@ -14,7 +14,8 @@ class SaveToMySQL_test_Pipeline:
             port='3306',
             user='tuyendungUser',
             password='sinhvienBK',
-            database='ThongTinTuyenDung'
+            database='ThongTinTuyenDung',
+            connect_timeout=4000
         )
         
         # self.conn = mysql.connector.connect(

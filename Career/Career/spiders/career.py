@@ -8,14 +8,14 @@ from Career.items import CBItem
 from datetime import date
 class CareerSpider(scrapy.Spider):
     name = "career"
-    allowed_domains = ["careerbuilder.vn"]
+    allowed_domains = ["careerviet.vn"]
     
     def start_requests(self):
-        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
         remove_url_list_local = db_connector.get_links_from_database()
         self.remove_url_list = remove_url_list_local
         print("Số lượng url trong CSDL: ", len(self.remove_url_list))
-        yield scrapy.Request("https://careerbuilder.vn/viec-lam/tat-ca-viec-lam-vi.html", callback = self.parse)
+        yield scrapy.Request("https://careerviet.vn/viec-lam/tat-ca-viec-lam-vi.html", callback = self.parse)
         
     def parse(self, response):
         job_count_text = response.css('div.job-found-amout h1::text').get()
@@ -27,8 +27,8 @@ class CareerSpider(scrapy.Spider):
         else:
             max_page = math.floor(cv_count/50) + 1
         # max_page = 10
-        for page_number in range(1, max_page+1):
-            page_url = f"https://careerbuilder.vn/viec-lam/tat-ca-viec-lam-trang-{page_number}-vi.html"
+        for page_number in range(1, max_page + 1):
+            page_url = f"https://careerviet.vn/viec-lam/tat-ca-viec-lam-trang-{page_number}-vi.html"
             yield scrapy.Request(page_url, callback = self.job_url_parse)
         
     def job_url_parse(self, response):
@@ -60,14 +60,14 @@ class CareerSpider(scrapy.Spider):
         "Accept-Encoding": "gzip, deflate, br",
         "Accept-Language": "en-US,en;q=0.9,vi;q=0.8",
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "Origin": "https://careerbuilder.vn",
+        "Origin": "https://careerviet.vn",
         "Referer": url,
         "X-Requested-With": "XMLHttpRequest",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0"
         }    
         
         #Gửi dữ liệu và lấy kết quả trả về dạng json
-        yield scrapy.Request("https://careerbuilder.vn/search-jobs", method = 'POST', body=json.dumps(payload), headers = header, callback = self.json_parse, meta={'url_list_1': url_list_1, 'page_number': page_number})
+        yield scrapy.Request("https://careerviet.vn/search-jobs", method = 'POST', body=json.dumps(payload), headers = header, callback = self.json_parse, meta={'url_list_1': url_list_1, 'page_number': page_number})
         
         #*****************************************************************************************************
     def json_parse(self, response):
@@ -88,7 +88,7 @@ class CareerSpider(scrapy.Spider):
         
     def job_parse(self, response):
         ID = "CB_" + response.url.split(".")[-2]
-        Web = "CareerBuilder"
+        Web = "CareerViet"
         Link = response.url
         Nganh =""
         Luong =""

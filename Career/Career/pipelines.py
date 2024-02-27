@@ -11,20 +11,20 @@ import mysql.connector
 class ImportToMySQL:
     
     def __init__(self):
-        self.conn = mysql.connector.connect(
-            host = '103.56.158.31',
-            port = '3306',
-            user = 'tuyendungUser',
-            password = 'sinhvienBK',
-            database = 'ThongTinTuyenDung'
-        )
         # self.conn = mysql.connector.connect(
-        #     host = '127.0.0.1',
+        #     host = '103.56.158.31',
         #     port = '3306',
-        #     user ='root',
-        #     password = 'Camtruykich123',
-        #     database = 'tuyendung'
+        #     user = 'tuyendungUser',
+        #     password = 'sinhvienBK',
+        #     database = 'ThongTinTuyenDung'
         # )
+        self.conn = mysql.connector.connect(
+            host = '127.0.0.1',
+            port = '3306',
+            user ='root',
+            password = 'Camtruykich123',
+            database = 'tuyendung_2'
+        )
         ## Create cursor, used to execute commands
         self.cur = self.conn.cursor()
 

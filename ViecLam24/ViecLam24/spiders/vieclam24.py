@@ -8,7 +8,8 @@ class Vieclam24Spider(scrapy.Spider):
     allowed_domains = ["vieclam24h.vn"]
     
     def start_requests(self):
-        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
+        # db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
         remove_url_list_local = db_connector.get_links_from_database()
         self.remove_url_list = remove_url_list_local
         print("Số lượng url trong CSDL: ", len(self.remove_url_list))
@@ -23,7 +24,6 @@ class Vieclam24Spider(scrapy.Spider):
             num_page = num_job/30
         else:
             num_page = math.floor(num_job/30) + 1
-        print(num_page)
         for page_number in range(1, int(num_page) +1):
         # for page_number in range(1, 200):
             url_page = f"https://vieclam24h.vn/tim-kiem-viec-lam-nhanh?page={page_number}"

@@ -6,7 +6,8 @@ class JobokowebSpider(scrapy.Spider):
     allowed_domains = ["vn.joboko.com"]
 
     def start_requests(self):
-        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
+        # db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
         remove_url_list_local = db_connector.get_links_from_database()
         self.remove_url_list = remove_url_list_local
         print("Số lượng url trong CSDL: ", len(self.remove_url_list))
@@ -45,7 +46,7 @@ class JobokowebSpider(scrapy.Spider):
         Web = 'Joboko'
         Nganh = response.meta.get("branch_name")
         Link = response.url
-        TenCV = response.css('[class="nw-company-hero__info"] h2 a::text').get()
+        TenCV = response.css('[class="nw-company-hero__info"] .nw-company-hero__title a::text').get()
         CongTy = response.css('[class="nw-company-hero__info"]  a.nw-company-hero__text::text').get()
         TinhThanh = response.css('[class="nw-company-hero__address"]  a::text').get()
         Luong = response.css('[class="col-12"]  span::text').get()
@@ -60,19 +61,20 @@ class JobokowebSpider(scrapy.Spider):
                 CapBac = response.css('[class="col-12 col-md-6"]')[i].css('span::text').get()
         
         YeuCau = ""
-        YeuCau_List = response.css('[class="text-justify"]')[1].css('*:not(:empty)::text').getall()
-        for i in range(len(YeuCau_List)):
-            YeuCau += YeuCau_List[i]
-        
         MoTa = ""
-        MoTa_List = response.css('[class="text-justify"]')[0].css('*:not(:empty)::text').getall()
-        for i in range(len(MoTa_List)):
-            MoTa += MoTa_List[i]
-        
         PhucLoi =""
-        PhucLoi_List = response.css('[class="text-justify"]')[0].css('*:not(:empty)::text').getall()
-        for i in range(len(PhucLoi_List)):
-            PhucLoi += PhucLoi_List[i]
+        if 'Mô tả công việc' in response.css('[class="fz-15 block-text c-text-2"] h3::text').extract():
+            MoTa_List = response.css('.text-left')[0].css('*:not(:empty)::text').getall()
+            for i in range(len(MoTa_List)):
+                MoTa += MoTa_List[i]
+        if 'Yêu cầu công việc' in response.css('[class="fz-15 block-text c-text-2"] h3::text').extract():
+            YeuCau_List = response.css('.text-left')[1].css('*:not(:empty)::text').getall()
+            for i in range(len(YeuCau_List)):
+                YeuCau += YeuCau_List[i]
+        if 'Quyền lợi được hưởng' in response.css('[class="fz-15 block-text c-text-2"] h3::text').extract():
+            PhucLoi_List = response.css('.text-left')[2].css('*:not(:empty)::text').getall()
+            for i in range(len(PhucLoi_List)):
+                PhucLoi += PhucLoi_List[i]
         
         HanNopCV = response.css('[class="item-date"]::attr(data-value)').get().split("T")[0]
         SoLuong= "1"

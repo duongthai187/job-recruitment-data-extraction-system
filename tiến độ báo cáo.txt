@@ -1,9 +1,0 @@
-TopDev : ok
-CareerBuilder : OK
-CareerLink : OK
-DevWork : OK
-ITNaVi: OK
-Job3s : OK
-Joboko : OK
-Jobsgo : OK
-StudentJob : OK

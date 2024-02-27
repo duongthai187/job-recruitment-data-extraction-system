@@ -9,22 +9,22 @@ import mysql.connector
 class SaveToMySQL_test_Pipeline:
 
     def __init__(self):
-        self.conn = mysql.connector.connect(
-            host='103.56.158.31',
-            port='3306',
-            user='tuyendungUser',
-            password='sinhvienBK',
-            database='ThongTinTuyenDung',
-            connect_timeout=4000
-        )
-        
         # self.conn = mysql.connector.connect(
-        #     host='127.0.0.1',
+        #     host='103.56.158.31',
         #     port='3306',
-        #     user='root',
-        #     password='Camtruykich123',
-        #     database='tuyendung_2'
+        #     user='tuyendungUser',
+        #     password='sinhvienBK',
+        #     database='ThongTinTuyenDung',
+        #     connect_timeout=4000
         # )
+        
+        self.conn = mysql.connector.connect(
+            host='127.0.0.1',
+            port='3306',
+            user='root',
+            password='Camtruykich123',
+            database='tuyendung_2'
+        )
 
         self.cur = self.conn.cursor()
 

@@ -8,7 +8,8 @@ class DevworkSpider(scrapy.Spider):
     name = "devwork"
     allowed_domains = ["devwork.vn"]
     start_urls = ["https://devwork.vn/viec-lam?page=1"]
-    db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+    db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
+    # db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
     remove_url_list_local = db_connector.get_links_from_database()
     remove_url_list = remove_url_list_local
     print("Số lượng url trong CSDL: ", len(remove_url_list))
@@ -41,19 +42,23 @@ class DevworkSpider(scrapy.Spider):
         TenCV = response.css('div[class="header-details"] h1[class="mb-3"]::text').get().replace("\n", "").strip()
         CongTy = response.css('div[class="header-details"] h5[class="mb-10 fw-400"] a::text').get().replace("\n", "").strip()
         TinhThanh = response.css('div[class="header-details"] p::text').get().replace("\n", "").strip()
+        Luong = response.css('div.mt-12 div.salary-amount.mb-4 ::text').get().replace("\n", "").strip()
         #************************************************************************************************
+        LoaiHinh = KinhNghiem = CapBac = SoLuong = ""
         col = response.css('div[class="job-overview mt-20"] li')
-        Luong = col[0].css('div span::text').get()
-        LoaiHinh = col[5].css('div span::text').get()
-        KinhNghiem = col[1].css('div span::text').get()
-        CapBac = col[3].css('div span::text').get()
-        try:
-            HanNopCV = col[6].css('div span::text').get()
-            if HanNopCV =="":
+        for i in range(len(col)):
+            if 'Hình thức' in col[i].css('div strong::text').get():
+                LoaiHinh = col[i].css('div span::text').get()
+            if 'Kinh nghiệm' in col[i].css('div strong::text').get():
+                KinhNghiem = col[i].css('div span::text').get()
+            if 'Vị trí' in col[i].css('div strong::text').get():
+                CapBac = col[i].css('div span::text').get()
+            if 'Hạn nộp hồ sơ' in col[i].css('div strong::text').get():
+                HanNopCV = col[i].css('div span::text').get()
+            else:
                 HanNopCV = date.today()
-        except:
-            HanNopCV = date.today()
-        SoLuong = col[7].css('div span::text').get()
+            if 'Số lượng' in col[i].css('div strong::text').get():
+                SoLuong = col[i].css('div span::text').get()
         #****************************************************************
         text = response.css('div[class="block-desc"]')
         MoTa = ''
@@ -86,5 +91,6 @@ class DevworkSpider(scrapy.Spider):
         item['PhucLoi'] = PhucLoi
         item['HanNopCV'] = HanNopCV
         item['SoLuong'] = SoLuong
+        
         yield item
         

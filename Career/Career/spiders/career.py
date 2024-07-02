@@ -2,6 +2,7 @@ import scrapy
 import math
 import numpy as np
 import json
+from bs4 import BeautifulSoup
 from urllib.parse import urlencode
 from Career.pipelines import DatabaseConnector
 from Career.items import CBItem
@@ -11,7 +12,7 @@ class CareerSpider(scrapy.Spider):
     allowed_domains = ["careerviet.vn"]
     
     def start_requests(self):
-        db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
         remove_url_list_local = db_connector.get_links_from_database()
         self.remove_url_list = remove_url_list_local
         print("Số lượng url trong CSDL: ", len(self.remove_url_list))
@@ -76,15 +77,15 @@ class CareerSpider(scrapy.Spider):
         url_list_1 = response.meta.get('url_list_1', [])
         url_list_2 = []
         for i in range(len(json_data["data"])):
-            url_list_2.append(json_data["data"][i]["LINK_JOB"])                            #Lấy được mảng url_list_2                      
+            url_list_2.append(json_data["data"][i]["LINK_JOB"])                            #Lấy được mảng url_list_2  
         url_list = url_list_1 + url_list_2
         print("Số url của trang: ", page_number, "là: ", len(url_list))
-        for url_job in url_list:
-            if url_job in self.remove_url_list:
-                print("Trùng lặp: ", url_job)
+        for j in range(len(url_list)):
+            if url_list[j] in self.remove_url_list:
+                print("Trùng lặp: ", url_list[j])
                 continue
             else:
-                yield scrapy.Request(url_job, callback = self.job_parse)
+                yield scrapy.Request(url_list[j], callback = self.job_parse)
         
     def job_parse(self, response):
         ID = "CB_" + response.url.split(".")[-2]
@@ -95,13 +96,21 @@ class CareerSpider(scrapy.Spider):
         LoaiHinh =""
         CapBac =""
         HanNopCV = date.today() #Trường kinh nghiệm đã được xử lí phía dưới
+        json_content = response.xpath('//script[@type="application/ld+json"]')[1].extract()
+        soup = BeautifulSoup(json_content, "html.parser")
+        json_content = soup.find("script", type="application/ld+json").string.replace("\n", "").replace("\t", "").replace("\r", "")
+        json_data = json.loads(json_content)
+        try:
+            Img = json_data['hiringOrganization']['logo']
+        except:
+            Img = ""
         #************************************************************************************************
         try:
             col_1 = response.css('div[class="detail-box has-background"]')[0]       #Loại 1
             for i in range(len(col_1.css('ul li'))):
                 try:
                     if 'Ngành nghề' in col_1.css('ul li')[i].css('strong::text').extract():
-                        Nganh = col_1.css('ul li')[i].css('p a::text').getall()
+                        Nganh = col_1.css('ul li')[i].css('p a::text').getall()[0].split("/")[0].strip()
                     if 'Hình thức' in col_1.css('ul li')[i].css('strong::text').extract():
                         LoaiHinh = col_1.css('ul li')[i].css('p::text').get()
                 except:
@@ -123,7 +132,7 @@ class CareerSpider(scrapy.Spider):
                 except:
                     continue
             PhucLoi = response.css('ul.welfare-list li::text').getall()
-            MoTa = response.css('div.detail-row.reset-bullet p::text').getall()
+            MoTa = response.css('div.detail-row.reset-bullet ::text').getall()
             YeuCau = response.css('div[class="detail-row"]')[1].css('::text').getall()
         except IndexError:
             try:
@@ -131,7 +140,7 @@ class CareerSpider(scrapy.Spider):
                 for i in range(len(col_1.css('table tr'))):                     #Loại 2
                     try:
                         if 'Ngành nghề' in col_1.css('table tr')[i].css('td')[0].css('p::text').extract():
-                            Nganh = col_1.css('table tr')[i].css('td')[1].css('a::text').extract()
+                            Nganh = col_1.css('table tr')[i].css('td')[1].css('a::text').extract()[0].split("/")[0].strip()
                         if 'Lương' in col_1.css('table tr')[i].css('td')[0].css('p::text').extract():
                             Luong = col_1.css('table tr')[i].css('td')[1].css('p strong::text').get()
                         if 'Hình thức' in col_1.css('table tr')[i].css('td')[0].css('p::text').extract():
@@ -150,9 +159,8 @@ class CareerSpider(scrapy.Spider):
                     except:
                         continue
                 PhucLoi = response.css('ul[class="welfare-list"] li::text').extract()
-                MoTa = response.css('div[class="detail-row"]')[0].css('p::text').extract()
+                MoTa = response.css('div[class="detail-row"]')[0].css('::text').extract()
                 YeuCau = response.css('div[class="detail-row"]')[1].css('::text').getall()
-                
                 CongTy = response.css('div[class="caption"] a::text').get()
                 TenCV = response.css('div[class="title"] h2::text').get()
                 TinhThanh = response.css('p[class="list-workplace"] a::text').get()
@@ -161,7 +169,7 @@ class CareerSpider(scrapy.Spider):
                 for i in range(len(col_1)):
                     try:
                         if 'Ngành nghề' in col_1[i].css('td')[0].css('p::text').extract():
-                            Nganh = col_1[i].css('td')[1].css('a::text').getall()
+                            Nganh = col_1[i].css('td')[1].css('a::text').getall()[0].split("/")[0].strip()
                         if 'Lương' in col_1[i].css('td')[0].css('p::text').extract():
                             Luong = col_1[i].css('td')[1].css('p strong::text').get()
                         if 'Hình thức' in col_1[i].css('td')[0].css('p::text').extract():
@@ -174,11 +182,11 @@ class CareerSpider(scrapy.Spider):
                             HanNopCV = col_1[i].css('td')[1].css('p::text').get()
                     except:
                         continue
-                TenCV = response.css('div[class="caption"] div.title h2::text').get()
-                CongTy = response.css('div[class="caption"] a::text').get()
+                TenCV = response.css('div[class="caption"] div.title h2::text').get() or response.css('div[class="head-template"] div[class="title"] h2::text').get()
+                CongTy = response.css('div[class="caption"] a::text').get() or response.css('.company::text').get()
                 TinhThanh = response.css('p[class="list-workplace"] a::text').get()
                 PhucLoi = response.css('div[class="detail-row box-welfares"] ul li::text').extract()
-                MoTa = response.css('div[class="detail-row"]')[0].css('p::text').extract()
+                MoTa = response.css('div[class="detail-row"]')[0].css('::text').getall()
                 YeuCau = response.css('div[class="detail-row"]')[1].css('::text').getall()
         #************************************************************************************************
         try:
@@ -194,12 +202,6 @@ class CareerSpider(scrapy.Spider):
         MoTa_s = ''
         for MT in MoTa:
             MoTa_s += MT
-        Nganh_s =''
-        for i in range(len(Nganh)):
-            Nganh_s += Nganh[0].replace("\\r\\n", "").strip()
-            break
-        if "CNTT" in Nganh_s:
-            Nganh_s = "IT"
         SoLuong = "1"
         item = CBItem()
 
@@ -219,7 +221,7 @@ class CareerSpider(scrapy.Spider):
             item['Link'] = ""
 
         try:
-            item['Nganh'] = Nganh_s
+            item['Nganh'] = Nganh
         except Exception as e:
             item['Nganh'] = ""
 
@@ -282,4 +284,9 @@ class CareerSpider(scrapy.Spider):
             item["SoLuong"] = SoLuong
         except Exception as e:
             item["SoLuong"] = ""
+        
+        try:
+            item["Img"] = Img
+        except Exception as e:
+            item["Img"] = ""
         yield item

@@ -7,8 +7,8 @@ class CareerlinkSpider(scrapy.Spider):
     allowed_domains = ["www.careerlink.vn"]
     
     def start_requests(self):
-        db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
-        # db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        # db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
         remove_url_list_local = db_connector.get_links_from_database()
         self.remove_url_list = remove_url_list_local
         print("Số lượng url trong CSDL: ", len(self.remove_url_list))
@@ -41,6 +41,7 @@ class CareerlinkSpider(scrapy.Spider):
     
     def job_parse(self, response):
         ID = "CareerLink_" + (response.url).split("/")[-1].split("?")[0]
+        Img = response.css('img.company-img ::attr(src)').get()
         Web = "CareerLink"
         for i in range(len(response.css('div[class="col-6 pl-1 pr-3 pl-md-2"]').css('div[class="job-summary-item d-block"]'))):
             if response.css('div[class="col-6 pl-1 pr-3 pl-md-2"]').css('div[class="my-0 summary-label"]')[i].css('::text').get() == "Ngành nghề":
@@ -104,5 +105,6 @@ class CareerlinkSpider(scrapy.Spider):
         item['PhucLoi'] = PhucLoi
         item['HanNopCV'] = HanNopCV
         item['SoLuong'] = SoLuong
+        item['Img'] = Img
         yield item
         

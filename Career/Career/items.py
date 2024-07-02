@@ -23,3 +23,4 @@ class CBItem(scrapy.Item):
     PhucLoi = scrapy.Field() # # #
     HanNopCV = scrapy.Field() # # #
     SoLuong = scrapy.Field() # # #
+    Img = scrapy.Field() # # #

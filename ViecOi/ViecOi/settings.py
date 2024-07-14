@@ -57,6 +57,12 @@ DOWNLOADER_MIDDLEWARES = {
    # 'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 220
 }
 
+DOWNLOAD_HANDLERS = {
+    'http': ('scrapy_fingerprint.fingerprint_download_handler.'
+             'FingerprintDownloadHandler'),
+    'https': ('scrapy_fingerprint.fingerprint_download_handler.'
+              'FingerprintDownloadHandler'),
+}
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 #EXTENSIONS = {
@@ -65,9 +71,9 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "ViecOi.pipelines.ViecoiPipeline": 300,
-#}
+ITEM_PIPELINES = {
+   "ViecOi.pipelines.ImportToMySQL": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -104,7 +110,7 @@ SCRAPEOPS_NUM_RESULTS = 150
 SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT = 'https://headers.scrapeops.io/v1/browser-headers'
 SCRAPEOPS_FAKE_BROWSER_HEADER_ENABLED = True
 
-PROXY_POOL_ENABLED = True
+# PROXY_POOL_ENABLED = True
 # DOWNLOAD_DELAY = 1.5
 # AUTOTHROTTLE_ENABLED = True
 # AUTOTHROTTLE_START_DELAY = 6
@@ -116,3 +122,8 @@ RETRY_TIMES = 5
 
 # Thời gian chờ giữa các lần retry
 RETRY_DELAY = 30  # Giây
+
+# PROXY_HOST = 'http-dynamic-S02.xiaoxiangdaili.com'
+# PROXY_PORT = 10030
+# PROXY_USER = '******'
+# PROXY_PASS = '******'

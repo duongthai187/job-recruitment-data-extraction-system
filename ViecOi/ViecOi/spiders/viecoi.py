@@ -1,40 +1,70 @@
 import scrapy
 from ViecOi.items import ViecOi
+from ViecOi.pipelines import DatabaseConnector
 
 class ViecoiSpider(scrapy.Spider):
     name = "viecoi"
-    allowed_domains = ["viecoi.vn"]
-    start_urls = ['https://viecoi.vn/tim-viec/linh-vuc-it-phan-cung-mang-may-tinh-212.html?page=', 'https://viecoi.vn/tim-viec/linh-vuc-it-phan-mem-lap-trinh-211.html?page=']
+    
+    
     def start_requests(self):
-        for page_first_url in self.start_urls:
-            for page_number in range(1, 100):
-                page_url = page_first_url + str(page_number)
-                yield scrapy.Request(page_url, callback = self.parse)
+        db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+        remove_url_list_local = db_connector.get_links_from_database()
+        self.remove_url_list = remove_url_list_local
+        print("Số lượng url trong CSDL: ", len(self.remove_url_list))
+        yield scrapy.Request("https://viecoi.vn/tim-viec/all.html", callback = self.parse)
     
     def parse(self, response):
-        job_list_url = response.css('div[class = "grid-job-title"] .title-jobs-home a::attr(href)').extract()
-        for job_url in job_list_url:
-            yield response.follow(job_url, callback = self.job_parse)
+        job_count = int(response.css('.job_number-grid b::text').get().replace(',', ""))
+        if job_count % 10 == 0:
+            max_page_number = job_count / 10
+        else:
+            max_page_number = job_count // 10 +1
+        for page_number in range(1, max_page_number+1):
+            yield scrapy.Request(f"https://viecoi.vn/tim-viec/all.html?page={page_number}", callback=self.list_job_parse)
+    
+    def list_job_parse(self, response):            
+        list_job_url = response.css('.list_job_detail .title-jobs-home ::attr(href)').extract()
+        for job_url in list_job_url:
+            if job_url in self.remove_url_list:
+                continue
+            else:
+                yield scrapy.Request(job_url, callback = self.job_parse)
     
     def job_parse(self, response):
         ID = "V_O_" + response.url.split("-")[-1].replace(".html", "")
         Web = "ViecOi"
-        col = response.css('div[class = "col-xs-12  background_white property-margin-detail py_10"]')
-        Nganh = col[0].css('ul li')[1].css('div')[1].css('a::text').getall()
         Link = response.url
-        CongTy = col[0].css('ul li')[2].css('div')[1].css('a::text').get()
-        TenCV = response.css('h1[class = "title-jobs-home title-detail-middle"]::text').get()
-        TinhThanh = col[0].css('ul li')[2].css('div')[1].css('a::text').get()
-        HanNopCV = col[0].css('ul li')[3].css('div')[1].css('::text').get()
-        SoLuong= col[1].css('ul li')[0].css('div')[1].css('::text').get()
-        KinhNghiem = col[1].css('ul li')[2].css('div')[1].css('::text').get()
-        CapBac = col[1].css('ul li')[4].css('div')[1].css('a::text').get()
-        Luong = response.css('div[class="div-salary"]').css('div')[1].css('div')[1].css('::text').extract()
-        LoaiHinh = "Không có"
-        MoTa = col[2].css('div[id="des_company"] ::text').getall()
-        YeuCau = col[5].css('a[class="tag "] ::text').getall()
-        PhucLoi = col[3].css('a[class="tag "] ::text').getall()
-        
+        Luong = "".join(response.css('.div-salary ::text').extract())
+        TenCV = response.css('.title-jobs-home ::text').get()
+        for li_tag in response.css('.ul-sub-detail .hide-mobi'):
+            text_content = li_tag.css('::text').get().lower()
+
+            if 'công ty' in text_content:
+                CongTy = ", ".join(text.strip() for text in li_tag.xpath('../..').css('.d-table-cell.d-table-padding ::text').extract()) or "Không có"
+
+            if 'lĩnh vực' in text_content:
+                # Sử dụng get() trực tiếp để lấy text từ thẻ <a>
+                Nganh = li_tag.xpath('../..').css('.d-table-cell.d-table-padding a::text').get() or "Không có"
+
+            if 'nơi làm việc' in text_content:
+                TinhThanh = ", ".join(text.strip() for text in li_tag.xpath('../..').css('.d-table-cell.d-table-padding ::text').extract()) or "Không có"
+
+            if 'kinh nghiệm' in text_content:
+                KinhNghiem = li_tag.xpath('../..').css('.d-table-cell.d-table-padding ::text').get() or "Không có"
+
+            if 'vị trí' in text_content:
+                CapBac = li_tag.xpath('../..').css('.d-table-cell.d-table-padding ::text').get() or "Không có"
+
+            if 'hạn nộp' in text_content:
+                HanNopCV = li_tag.xpath('../..').css('.d-table-cell.d-table-padding ::text').get() or "Không có"
+
+            if 'số lượng' in text_content:
+                SoLuong = li_tag.xpath('../..').css('.d-table-cell.d-table-padding ::text').get() or "Không có"
+        LoaiHinh = 'Toàn thời gian'
+        Img = 'https://viecoi.vn/' + response.css('.grid-company .grid-image img::attr(src)').get()
+        MoTa = "\n".join(response.css('div[id="des_company"] ::text').extract())
+        YeuCau = ", ".join(response.xpath('//div[@id="kn"]/following-sibling::div').css('.tag ::text').extract())
+        PhucLoi = ", ".join(response.css('div[id="prf"] .tag ::text').extract())
         item = ViecOi()
         item['ID'] = ID
         item['Web'] = Web
@@ -52,6 +82,7 @@ class ViecoiSpider(scrapy.Spider):
         item['PhucLoi'] = PhucLoi
         item['HanNopCV'] = HanNopCV
         item['SoLuong'] = SoLuong
+        item['Img'] = Img
         yield item
         
         

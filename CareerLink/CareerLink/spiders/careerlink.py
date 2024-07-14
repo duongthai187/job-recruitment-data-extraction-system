@@ -56,17 +56,24 @@ class CareerlinkSpider(scrapy.Spider):
         TenCV = response.css('h1[class="job-title mb-0"]::text').get()
         CongTy = response.css('p[class="org-name mb-2"] span::text').get()
         TinhThanh = ''
-        TinhThanhs_TG = response.css('div[class="d-flex align-items-start mb-2"] *:not(:empty)::text').getall()
+        TinhThanhs_TG = response.css('div[id="job-location"] *:not(:empty)::text').getall()
         for TinhThanh_TG in TinhThanhs_TG:
             if TinhThanh_TG != '\n':
                 TinhThanh += TinhThanh_TG
-        Luong = response.css('div[class="d-flex align-items-center mb-2"]')[0].css('span::text').get()
-        KinhNghiem = response.css('div[class="d-flex align-items-center mb-2"]')[1].css('span::text').get()
-        deadline = response.css('div[class="d-flex align-items-center mb-2"]')[2].css('b::text').get().split("\n")[1]
-        try:
-            HanNopCV = date.today() + timedelta(days = int(deadline))
-        except:
-            HanNopCV = date.today()
+        # Xử lý kinh nghiệm, lương, HanNopCV
+        div_elements = response.css('div.d-flex.align-items-center.mb-2')
+        for div in div_elements:
+            if not div.attrib.get('id'):
+                KinhNghiem = div.css('span::text').get()
+            if div.attrib.get('id') == 'job-salary':
+                Luong = div.css('span::text').get()
+            if div.attrib.get('id') == 'job-date':
+                deadline = div.css('div.day-expired b::text').get()
+                if deadline.replace("\n", "") == 'Hôm nay':
+                    HanNopCV = date.today()
+                else:
+                    HanNopCV = date.today() + timedelta(days = int(deadline.replace("\n", "").replace("Ngày tới", "")))
+        ############################################
         for i in range(len(response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]'))):
             if response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]')[i].css('div[class="my-0 summary-label"]::text').get() == "Cấp bậc":
                 CapBac = response.css('div[class="col-6 pr-1 pl-3 pr-md-2"] div[class="job-summary-item d-block"]')[i].css('div')[2].css('::text').get()
@@ -76,17 +83,14 @@ class CareerlinkSpider(scrapy.Spider):
         MoTa = ''
         MoTas_TG = response.css('div[id="section-job-description"] *:not(:empty)::text').getall()
         for MoTa_TG in MoTas_TG:
-            if MoTa_TG != '\n':
                 MoTa += MoTa_TG
         YeuCau = ''
         YeuCaus_TG = response.css('div[id="section-job-skills"] *:not(:empty)::text').getall()
         for YeuCau_TG in YeuCaus_TG:
-            if YeuCau_TG != '\n':
                 YeuCau += YeuCau_TG
         PhucLoi = ''
         PhucLois_TG = response.css('div[id="section-job-benefits"] *:not(:empty)::text').getall()
         for PhucLoi_TG in PhucLois_TG:
-            if PhucLoi_TG != '\n':
                 PhucLoi += PhucLoi_TG
         item = CareerLinkItem()
         item['ID'] = ID

@@ -64,8 +64,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "CareerLink.pipelines.CleanItem": 200,
-   "CareerLink.pipelines.ImportToMySQL": 300
+   # "CareerLink.pipelines.CleanItem": 200,
+   # "CareerLink.pipelines.ImportToMySQL": 300
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -103,9 +103,9 @@ SCRAPEOPS_FAKE_BROWSER_HEADER_ENABLED = True
 
 DOWNLOAD_DELAY = 1
 AUTOTHROTTLE_ENABLED = True
-AUTOTHROTTLE_START_DELAY = 6
-AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
-CONCURRENT_REQUESTS = 6
+AUTOTHROTTLE_START_DELAY = 4
+AUTOTHROTTLE_TARGET_CONCURRENCY = 6
+CONCURRENT_REQUESTS = 10
 CONCURRENT_REQUESTS_PER_DOMAIN = 6
 
 RETRY_TIMES = 5

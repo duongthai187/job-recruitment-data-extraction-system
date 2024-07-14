@@ -11,29 +11,29 @@ import mysql.connector
 class ImportToMySQL:
     
     def __init__(self):
-        # self.conn = mysql.connector.connect(
-        #     host='103.56.158.31',
-        #     port='3306',
-        #     user='tuyendungUser',
-        #     password='sinhvienBK',
-        #     database='ThongTinTuyenDung'
-        # )
         self.conn = mysql.connector.connect(
-            host = '127.0.0.1',
+            host = '103.56.158.31',
             port = '3306',
-            user ='root',
-            password = 'Camtruykich123',
-            database = 'tuyendung_2'
+            user = 'tuyendungUser',
+            password = 'sinhvienBK',
+            database = 'ThongTinTuyenDung'
         )
+        # self.conn = mysql.connector.connect(
+        #     host = '127.0.0.1',
+        #     port = '3306',
+        #     user ='root',
+        #     password = 'Camtruykich123',
+        #     database = 'tuyendung_2'
+        # )
         ## Create cursor, used to execute commands
         self.cur = self.conn.cursor()
 
     def process_item(self, item, spider):
         sql = """
-            INSERT IGNORE INTO Stg_ThongTin_raw(Web, Nganh, Link, TenCV, CongTy, TinhThanh, Luong, LoaiHinh, KinhNghiem, CapBac, HanNopCV, YeuCau, MoTa, PhucLoi, SoLuong) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT IGNORE INTO Stg_Data_Raw(Web, Nganh, Link, TenCV, CongTy, TinhThanh, Luong, LoaiHinh, KinhNghiem, CapBac, HanNopCV, YeuCau, MoTa, PhucLoi, SoLuong, Image) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
-        self.cur.execute(sql, (item['Web'], item['Nganh'], item['Link'], item['TenCV'], item['CongTy'], item['TinhThanh'], item['Luong'], item['LoaiHinh'], item['KinhNghiem'], item['CapBac'], item['HanNopCV'], item['YeuCau'], item['MoTa'], item['PhucLoi'], item['SoLuong']))
+        self.cur.execute(sql, (item['Web'], item['Nganh'], item['Link'], item['TenCV'], item['CongTy'], item['TinhThanh'], item['Luong'], item['LoaiHinh'], item['KinhNghiem'], item['CapBac'], item['HanNopCV'], item['YeuCau'], item['MoTa'], item['PhucLoi'], item["SoLuong"], item["Img"]))
         self.conn.commit()
 
     def close_spider(self, spider):
@@ -61,7 +61,7 @@ class DatabaseConnector:
         connection = self.connect()
         cursor = connection.cursor()
 
-        query = "SELECT Link FROM Stg_ThongTin_raw WHERE Web =\'Vieclam24h\'"
+        query = "SELECT Link FROM Stg_Data_Raw WHERE Web =\'Vieclam24h\'"
         cursor.execute(query)
 
         links = [row[0] for row in cursor.fetchall()]

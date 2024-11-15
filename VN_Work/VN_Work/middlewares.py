@@ -39,7 +39,6 @@ class ScrapeOpsFakeUserAgentMiddleware:
     def process_request(self, request, spider):        
         random_user_agent = self._get_random_user_agent()
         request.headers['User-Agent'] = random_user_agent
-        print(random_user_agent)
 
 class ScrapeOpsFakeBrowserHeaderAgentMiddleware:
 
@@ -76,13 +75,5 @@ class ScrapeOpsFakeBrowserHeaderAgentMiddleware:
     
     def process_request(self, request, spider):        
         random_browser_header = self._get_random_browser_header()
-        request.headers['sec-fetch-user'] = random_browser_header['sec-fetch-user'] 
-        request.headers['sec-fetch-mod'] = random_browser_header['sec-fetch-mod'] 
-        request.headers['sec-fetch-site'] = random_browser_header['sec-fetch-site'] 
-        request.headers['sec-ch-ua-platform'] = random_browser_header['sec-ch-ua-platform'] 
-        request.headers['sec-ch-ua-mobile'] = random_browser_header['sec-ch-ua-mobile'] 
-        request.headers['sec-ch-ua'] = random_browser_header['sec-ch-ua'] 
-        request.headers['user-agent'] = random_browser_header['user-agent'] 
-        request.headers['upgrade-insecure-requests'] = random_browser_header.get('upgrade-insecure-requests')
-        
-        print("Browser header complete!!!")
+        for item in random_browser_header.keys():
+            request.headers[item] = random_browser_header[item]

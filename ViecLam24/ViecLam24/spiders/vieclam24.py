@@ -21,13 +21,13 @@ class Vieclam24Spider(scrapy.Spider):
             num_page = num_job/30
         else:
             num_page = math.floor(num_job/30) + 1
-        for page_number in range(1, int(num_page) +1):
+        for page_number in range(1, min(50, int(num_page) +1)):
         # for page_number in range(1, 200):
             url_page = f"https://vieclam24h.vn/tim-kiem-viec-lam-nhanh?page={page_number}"
             yield scrapy.Request(url_page, callback = self.get_job_list)
     
     def get_job_list(self, response):
-        job_list_url = response.css('a[class="relative lg:h-[115px] w-full flex rounded-sm border lg:mb-3 mb-2 lg:hover:shadow-md !hover:bg-white !bg-[#FFF5E7] border-se-blue-10"]::attr(href)').extract()
+        job_list_url = response.css('div[class="flex flex-col gap-3 sm_cv:gap-2"] a::attr(href)').extract()
         for url_job in job_list_url:
             if "https://vieclam24h.vn"in url_job:
                 url_job = url_job
@@ -45,7 +45,7 @@ class Vieclam24Spider(scrapy.Spider):
         Web = "Vieclam24h"
         Link = response.url
         Img = response.css('img[alt="logo"]::attr(src)').get()
-        Nganh = response.css('a[class="jsx-d84db6a84feb175e hover:text-se-accent"]::text').get()
+        Nganh = response.css('a[class="jsx-5b2773f86d2f74b hover:text-se-accent"]::text').get()
         TenCV = response.css('.leading-snug::text').get()
         CongTy = response.css('.font-normal.text-16.text-se-neutral-64.mb-4::text').get()
         TinhThanh = response.css('a[class="hover:text-se-accent"] span::text').get()
@@ -62,15 +62,12 @@ class Vieclam24Spider(scrapy.Spider):
             if (so_luong_text := col.css('p[class="mr-1 text-se-neutral-64 text-12"]::text').get()) == "Số lượng tuyển":
                 SoLuong = col.css('p[class="text-14"]::text').get() or "Không có"
         #******************************************************************
-        for YC_MT_PL in response.css('[class="jsx-d84db6a84feb175e text-24 font-semibold py-4"]'):
+        for YC_MT_PL in response.css('[class="jsx-5b2773f86d2f74b text-24 font-semibold py-4"]'):
             text_content = YC_MT_PL.css('::text').get().lower()  # Lấy nội dung text và chuyển thành chữ thường
-
             if "mô tả" in text_content:
                 MoTa = ", ".join(text.strip() for text in YC_MT_PL.xpath('..').css('::text').extract()) or "Không có"
-
             if "yêu cầu" in text_content:
                 YeuCau = ", ".join(text.strip() for text in YC_MT_PL.xpath('..').css('::text').extract()) or "Không có"
-
             if "quyền lợi" in text_content:
                 PhucLoi = ", ".join(text.strip() for text in YC_MT_PL.xpath('..').css('::text').extract()) or "Không có"
                 

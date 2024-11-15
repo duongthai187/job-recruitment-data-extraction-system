@@ -8,8 +8,8 @@ class DevworkSpider(scrapy.Spider):
     name = "devwork"
     allowed_domains = ["devwork.vn"]
     start_urls = ["https://devwork.vn/viec-lam?page=1"]
-    db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
-    # db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
+    # db_connector = DatabaseConnector(host='127.0.0.1', port = 3306, user='root', password='Camtruykich123', database='tuyendung_2')
+    db_connector = DatabaseConnector(host='103.56.158.31', port = 3306, user='tuyendungUser', password='sinhvienBK', database='ThongTinTuyenDung')
     remove_url_list_local = db_connector.get_links_from_database()
     remove_url_list = remove_url_list_local
     print("Số lượng url trong CSDL: ", len(remove_url_list))

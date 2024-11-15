@@ -48,7 +48,7 @@ class TopcvSpider(scrapy.Spider):
         Img = response.css('.company-logo img::attr(src)').get()
         for Nganh_demo in response.css('.box-category'):
             try:
-                if Nganh_demo.css('.box-title::text').get() == 'Ngành nghề':
+                if Nganh_demo.css('.box-title::text').get() == 'Danh mục Nghề liên quan':
                     Nganh = Nganh_demo.css('.box-category-tags a::text').get()
                     break
             except:
@@ -60,7 +60,6 @@ class TopcvSpider(scrapy.Spider):
         # Lấy thông tin lương, địa điểm, kinh nghiệm
         for section in response.css('.job-detail__info--section-content'):
             title_text = section.css('.job-detail__info--section-content-title::text').get()
-
             if title_text == 'Mức lương':
                 Luong = section.css('.job-detail__info--section-content-value::text').get() or "Không có"
             elif title_text == 'Địa điểm':
@@ -71,7 +70,6 @@ class TopcvSpider(scrapy.Spider):
         # Lấy thông tin cấp bậc, số lượng tuyển, loại hình làm việc
         for info_item in response.css('.box-general-group-info'):
             title_text = info_item.css('.box-general-group-info-title::text').get()
-
             if title_text == 'Cấp bậc':
                 CapBac = info_item.css('.box-general-group-info-value::text').get() or "Không có"
             elif title_text == 'Số lượng tuyển':
@@ -85,13 +83,10 @@ class TopcvSpider(scrapy.Spider):
         
         for item in response.css('.job-description__item'):
             title = item.css('h3::text').get().lower()  # Lấy tiêu đề và chuyển thành chữ thường để so sánh
-
             if "mô tả" in title:
                 MoTa = " ".join(text.strip() for text in item.css('::text').extract()) or "Không có"
-
             if "yêu cầu" in title:
                 YeuCau = " ".join(text.strip() for text in item.css('::text').extract()) or "Không có"
-
             if "quyền lợi" in title:
                 PhucLoi = " ".join(text.strip() for text in item.css('::text').extract()) or "Không có"
 

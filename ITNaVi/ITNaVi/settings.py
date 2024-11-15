@@ -64,8 +64,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "ITNaVi.pipelines.CleanItem": 200,
-   "ITNaVi.pipelines.SaveToMySQL_test_Pipeline": 300
+   # "ITNaVi.pipelines.CleanItem": 200,
+   # "ITNaVi.pipelines.SaveToMySQL_test_Pipeline": 300
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

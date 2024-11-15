@@ -51,8 +51,6 @@ ROBOTSTXT_OBEY = False
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   # 'rotating_free_proxies.middlewares.RotatingProxyMiddleware': 610,
-   # 'rotating_free_proxies.middlewares.BanDetectionMiddleware': 620,
    "TopCV.middlewares.ScrapeOpsFakeUserAgentMiddleware": 400,
    "TopCV.middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware": 300
 }
@@ -110,12 +108,12 @@ SCRAPEOPS_NUM_RESULTS = 96
 SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT = 'https://headers.scrapeops.io/v1/browser-headers'
 SCRAPEOPS_FAKE_BROWSER_HEADER_ENABLED = True
 
-DOWNLOAD_DELAY = 0.5
-# AUTOTHROTTLE_ENABLED = True
-# AUTOTHROTTLE_START_DELAY = 4
-# AUTOTHROTTLE_TARGET_CONCURRENCY = 4
-# CONCURRENT_REQUESTS = 8
-# CONCURRENT_REQUESTS_PER_DOMAIN = 4
+DOWNLOAD_DELAY = 1
+AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_START_DELAY = 4
+AUTOTHROTTLE_TARGET_CONCURRENCY = 4
+CONCURRENT_REQUESTS = 8
+CONCURRENT_REQUESTS_PER_DOMAIN = 4
 
 RETRY_TIMES = 5
 

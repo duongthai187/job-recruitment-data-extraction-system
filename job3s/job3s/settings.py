@@ -55,6 +55,12 @@ DOWNLOADER_MIDDLEWARES = {
    "job3s.middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware": 300
 }
 
+DOWNLOAD_HANDLERS = {
+    'http': ('scrapy_fingerprint.fingerprint_download_handler.'
+             'FingerprintDownloadHandler'),
+    'https': ('scrapy_fingerprint.fingerprint_download_handler.'
+              'FingerprintDownloadHandler'),
+}
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 #EXTENSIONS = {
@@ -64,7 +70,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "job3s.pipelines.SaveToMySQL_test_Pipeline": 300,
+   # "job3s.pipelines.SaveToMySQL_test_Pipeline": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

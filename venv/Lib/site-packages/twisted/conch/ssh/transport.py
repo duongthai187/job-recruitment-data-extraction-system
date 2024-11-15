@@ -9,20 +9,22 @@ RFC 4253.
 
 Maintainer: Paul Swartz
 """
-
+from __future__ import annotations
 
 import binascii
 import hmac
 import struct
+import types
 import zlib
 from hashlib import md5, sha1, sha256, sha384, sha512
-from typing import Dict
+from typing import Any, Callable, Dict, Tuple, Union
 
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh, ec, x25519
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from typing_extensions import Literal
 
 from twisted import __version__ as twisted_version
 from twisted.conch.ssh import _kex, address, keys
@@ -50,7 +52,12 @@ def _mpFromBytes(data):
     return MP(int.from_bytes(data, "big"))
 
 
-class _MACParams(tuple):
+# from https://github.com/python/typeshed/blob/703ed36d5a5c9505c903ea2182e6eed679d9bddb/stdlib/hmac.pyi#L9-L10
+_Hash = Any
+_DigestMod = Union[str, Callable[[], _Hash], types.ModuleType]
+
+
+class _MACParams(Tuple[_DigestMod, bytes, bytes, int]):
     """
     L{_MACParams} represents the parameters necessary to compute SSH MAC
     (Message Authenticate Codes).
@@ -68,6 +75,8 @@ class _MACParams(tuple):
 
     @ivar key: The HMAC key which will be used.
     """
+
+    key: bytes
 
 
 class SSHCiphers:
@@ -94,17 +103,13 @@ class SSHCiphers:
 
     cipherMap = {
         b"3des-cbc": (algorithms.TripleDES, 24, modes.CBC),
-        b"blowfish-cbc": (algorithms.Blowfish, 16, modes.CBC),
         b"aes256-cbc": (algorithms.AES, 32, modes.CBC),
         b"aes192-cbc": (algorithms.AES, 24, modes.CBC),
         b"aes128-cbc": (algorithms.AES, 16, modes.CBC),
-        b"cast128-cbc": (algorithms.CAST5, 16, modes.CBC),
         b"aes128-ctr": (algorithms.AES, 16, modes.CTR),
         b"aes192-ctr": (algorithms.AES, 24, modes.CTR),
         b"aes256-ctr": (algorithms.AES, 32, modes.CTR),
         b"3des-ctr": (algorithms.TripleDES, 24, modes.CTR),
-        b"blowfish-ctr": (algorithms.Blowfish, 16, modes.CTR),
-        b"cast128-ctr": (algorithms.CAST5, 16, modes.CTR),
         b"none": (None, 0, modes.CBC),
     }
     macMap = {
@@ -169,7 +174,9 @@ class SSHCiphers:
             backend=default_backend(),
         )
 
-    def _getMAC(self, mac, key):
+    def _getMAC(
+        self, mac: bytes, key: bytes
+    ) -> tuple[None, Literal[b""], Literal[b""], Literal[0]] | _MACParams:
         """
         Gets a 4-tuple representing the message authentication code.
         (<hash module>, <inner hash value>, <outer hash value>,
@@ -284,10 +291,6 @@ def _getSupportedCiphers():
         b"aes192-cbc",
         b"aes128-ctr",
         b"aes128-cbc",
-        b"cast128-ctr",
-        b"cast128-cbc",
-        b"blowfish-ctr",
-        b"blowfish-cbc",
         b"3des-ctr",
         b"3des-cbc",
     ]
@@ -729,7 +732,6 @@ class SSHTransportBase(protocol.Protocol):
         """
         self.buf = self.buf + data
         if not self.gotVersion:
-
             if len(self.buf) > 4096:
                 self.sendDisconnect(
                     DISCONNECT_CONNECTION_LOST,
@@ -1237,7 +1239,7 @@ class SSHTransportBase(protocol.Protocol):
         self._keyExchangeState = self._KEY_EXCHANGE_NONE
         messages = self._blockedByKeyExchange
         self._blockedByKeyExchange = None
-        for (messageType, payload) in messages:
+        for messageType, payload in messages:
             self.sendPacket(messageType, payload)
 
     def isEncrypted(self, direction="out"):

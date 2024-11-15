@@ -65,9 +65,9 @@ class _SingleResponse:
         algorithm: hashes.HashAlgorithm,
         cert_status: OCSPCertStatus,
         this_update: datetime.datetime,
-        next_update: typing.Optional[datetime.datetime],
-        revocation_time: typing.Optional[datetime.datetime],
-        revocation_reason: typing.Optional[x509.ReasonFlags],
+        next_update: datetime.datetime | None,
+        revocation_time: datetime.datetime | None,
+        revocation_reason: x509.ReasonFlags | None,
     ):
         if not isinstance(cert, x509.Certificate) or not isinstance(
             issuer, x509.Certificate
@@ -180,7 +180,7 @@ class OCSPSingleResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def revocation_time(self) -> typing.Optional[datetime.datetime]:
+    def revocation_time(self) -> datetime.datetime | None:
         """
         The date of when the certificate was revoked or None if not
         revoked.
@@ -188,7 +188,15 @@ class OCSPSingleResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def revocation_reason(self) -> typing.Optional[x509.ReasonFlags]:
+    def revocation_time_utc(self) -> datetime.datetime | None:
+        """
+        The date of when the certificate was revoked or None if not
+        revoked. Represented as a non-naive UTC datetime.
+        """
+
+    @property
+    @abc.abstractmethod
+    def revocation_reason(self) -> x509.ReasonFlags | None:
         """
         The reason the certificate was revoked or None if not specified or
         not revoked.
@@ -204,9 +212,26 @@ class OCSPSingleResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def next_update(self) -> typing.Optional[datetime.datetime]:
+    def this_update_utc(self) -> datetime.datetime:
+        """
+        The most recent time at which the status being indicated is known by
+        the responder to have been correct. Represented as a non-naive UTC
+        datetime.
+        """
+
+    @property
+    @abc.abstractmethod
+    def next_update(self) -> datetime.datetime | None:
         """
         The time when newer information will be available
+        """
+
+    @property
+    @abc.abstractmethod
+    def next_update_utc(self) -> datetime.datetime | None:
+        """
+        The time when newer information will be available. Represented as a
+        non-naive UTC datetime.
         """
 
     @property
@@ -266,7 +291,7 @@ class OCSPResponse(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def signature_hash_algorithm(
         self,
-    ) -> typing.Optional[hashes.HashAlgorithm]:
+    ) -> hashes.HashAlgorithm | None:
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         """
@@ -287,7 +312,7 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def certificates(self) -> typing.List[x509.Certificate]:
+    def certificates(self) -> list[x509.Certificate]:
         """
         A list of certificates used to help build a chain to verify the OCSP
         response. This situation occurs when the OCSP responder uses a delegate
@@ -296,14 +321,14 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def responder_key_hash(self) -> typing.Optional[bytes]:
+    def responder_key_hash(self) -> bytes | None:
         """
         The responder's key hash or None
         """
 
     @property
     @abc.abstractmethod
-    def responder_name(self) -> typing.Optional[x509.Name]:
+    def responder_name(self) -> x509.Name | None:
         """
         The responder's Name or None
         """
@@ -317,6 +342,14 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def produced_at_utc(self) -> datetime.datetime:
+        """
+        The time the response was produced. Represented as a non-naive UTC
+        datetime.
+        """
+
+    @property
+    @abc.abstractmethod
     def certificate_status(self) -> OCSPCertStatus:
         """
         The status of the certificate (an element from the OCSPCertStatus enum)
@@ -324,7 +357,7 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def revocation_time(self) -> typing.Optional[datetime.datetime]:
+    def revocation_time(self) -> datetime.datetime | None:
         """
         The date of when the certificate was revoked or None if not
         revoked.
@@ -332,7 +365,15 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def revocation_reason(self) -> typing.Optional[x509.ReasonFlags]:
+    def revocation_time_utc(self) -> datetime.datetime | None:
+        """
+        The date of when the certificate was revoked or None if not
+        revoked. Represented as a non-naive UTC datetime.
+        """
+
+    @property
+    @abc.abstractmethod
+    def revocation_reason(self) -> x509.ReasonFlags | None:
         """
         The reason the certificate was revoked or None if not specified or
         not revoked.
@@ -348,9 +389,26 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def next_update(self) -> typing.Optional[datetime.datetime]:
+    def this_update_utc(self) -> datetime.datetime:
+        """
+        The most recent time at which the status being indicated is known by
+        the responder to have been correct. Represented as a non-naive UTC
+        datetime.
+        """
+
+    @property
+    @abc.abstractmethod
+    def next_update(self) -> datetime.datetime | None:
         """
         The time when newer information will be available
+        """
+
+    @property
+    @abc.abstractmethod
+    def next_update_utc(self) -> datetime.datetime | None:
+        """
+        The time when newer information will be available. Represented as a
+        non-naive UTC datetime.
         """
 
     @property
@@ -402,18 +460,21 @@ class OCSPResponse(metaclass=abc.ABCMeta):
         """
 
 
+OCSPRequest.register(ocsp.OCSPRequest)
+OCSPResponse.register(ocsp.OCSPResponse)
+OCSPSingleResponse.register(ocsp.OCSPSingleResponse)
+
+
 class OCSPRequestBuilder:
     def __init__(
         self,
-        request: typing.Optional[
-            typing.Tuple[
-                x509.Certificate, x509.Certificate, hashes.HashAlgorithm
-            ]
-        ] = None,
-        request_hash: typing.Optional[
-            typing.Tuple[bytes, bytes, int, hashes.HashAlgorithm]
-        ] = None,
-        extensions: typing.List[x509.Extension[x509.ExtensionType]] = [],
+        request: tuple[
+            x509.Certificate, x509.Certificate, hashes.HashAlgorithm
+        ]
+        | None = None,
+        request_hash: tuple[bytes, bytes, int, hashes.HashAlgorithm]
+        | None = None,
+        extensions: list[x509.Extension[x509.ExtensionType]] = [],
     ) -> None:
         self._request = request
         self._request_hash = request_hash
@@ -478,7 +539,7 @@ class OCSPRequestBuilder:
         _reject_duplicate_extension(extension, self._extensions)
 
         return OCSPRequestBuilder(
-            self._request, self._request_hash, self._extensions + [extension]
+            self._request, self._request_hash, [*self._extensions, extension]
         )
 
     def build(self) -> OCSPRequest:
@@ -491,12 +552,11 @@ class OCSPRequestBuilder:
 class OCSPResponseBuilder:
     def __init__(
         self,
-        response: typing.Optional[_SingleResponse] = None,
-        responder_id: typing.Optional[
-            typing.Tuple[x509.Certificate, OCSPResponderEncoding]
-        ] = None,
-        certs: typing.Optional[typing.List[x509.Certificate]] = None,
-        extensions: typing.List[x509.Extension[x509.ExtensionType]] = [],
+        response: _SingleResponse | None = None,
+        responder_id: tuple[x509.Certificate, OCSPResponderEncoding]
+        | None = None,
+        certs: list[x509.Certificate] | None = None,
+        extensions: list[x509.Extension[x509.ExtensionType]] = [],
     ):
         self._response = response
         self._responder_id = responder_id
@@ -510,9 +570,9 @@ class OCSPResponseBuilder:
         algorithm: hashes.HashAlgorithm,
         cert_status: OCSPCertStatus,
         this_update: datetime.datetime,
-        next_update: typing.Optional[datetime.datetime],
-        revocation_time: typing.Optional[datetime.datetime],
-        revocation_reason: typing.Optional[x509.ReasonFlags],
+        next_update: datetime.datetime | None,
+        revocation_time: datetime.datetime | None,
+        revocation_reason: x509.ReasonFlags | None,
     ) -> OCSPResponseBuilder:
         if self._response is not None:
             raise ValueError("Only one response per OCSPResponse.")
@@ -583,13 +643,13 @@ class OCSPResponseBuilder:
             self._response,
             self._responder_id,
             self._certs,
-            self._extensions + [extension],
+            [*self._extensions, extension],
         )
 
     def sign(
         self,
         private_key: CertificateIssuerPrivateKeyTypes,
-        algorithm: typing.Optional[hashes.HashAlgorithm],
+        algorithm: hashes.HashAlgorithm | None,
     ) -> OCSPResponse:
         if self._response is None:
             raise ValueError("You must add a response before signing")
@@ -614,9 +674,5 @@ class OCSPResponseBuilder:
         return ocsp.create_ocsp_response(response_status, None, None, None)
 
 
-def load_der_ocsp_request(data: bytes) -> OCSPRequest:
-    return ocsp.load_der_ocsp_request(data)
-
-
-def load_der_ocsp_response(data: bytes) -> OCSPResponse:
-    return ocsp.load_der_ocsp_response(data)
+load_der_ocsp_request = ocsp.load_der_ocsp_request
+load_der_ocsp_response = ocsp.load_der_ocsp_response
